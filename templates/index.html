@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Safety Guard — Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>Smart Safety Guard</h1>
+      <span id="status-badge" class="badge safe">SAFE</span>
+    </div>
+    <p class="subtitle">Industrial IoT Safety Monitoring · Raspberry Pi</p>
+  </header>
+
+  <main>
+    <!-- Live sensor cards -->
+    <section class="section-title">Live Sensor Readings</section>
+    <div class="cards">
+
+      <div class="card" id="card-pir">
+        <div class="card-icon">&#x1F6B6;</div>
+        <div class="card-label">Motion (PIR)</div>
+        <div class="card-value" id="val-pir">—</div>
+      </div>
+
+      <div class="card" id="card-distance">
+        <div class="card-icon">&#x1F4CF;</div>
+        <div class="card-label">Distance</div>
+        <div class="card-value" id="val-distance">—</div>
+        <div class="card-unit">cm</div>
+      </div>
+
+      <div class="card" id="card-gas">
+        <div class="card-icon">&#x1F4A8;</div>
+        <div class="card-label">Gas / Smoke</div>
+        <div class="card-value" id="val-gas">—</div>
+      </div>
+
+      <div class="card" id="card-temp">
+        <div class="card-icon">&#x1F321;&#xFE0F;</div>
+        <div class="card-label">Temperature</div>
+        <div class="card-value" id="val-temp">—</div>
+        <div class="card-unit">°C</div>
+      </div>
+
+      <div class="card" id="card-humidity">
+        <div class="card-icon">&#x1F4A7;</div>
+        <div class="card-label">Humidity</div>
+        <div class="card-value" id="val-humidity">—</div>
+        <div class="card-unit">%</div>
+      </div>
+
+    </div>
+
+    <!-- Active alerts banner -->
+    <div id="alert-banner" class="alert-banner hidden">
+      <strong>&#x26A0;&#xFE0F; ACTIVE ALERTS:</strong>
+      <span id="alert-list"></span>
+    </div>
+
+    <div class="two-col">
+      <!-- Temperature history chart -->
+      <section>
+        <div class="section-title">Temperature History (last 60 readings)</div>
+        <canvas id="temp-chart" height="180"></canvas>
+      </section>
+
+      <!-- Safety event log -->
+      <section>
+        <div class="section-title">Safety Event Log</div>
+        <div class="event-log" id="event-log">
+          <p class="no-events">No events yet.</p>
+        </div>
+      </section>
+    </div>
+
+    <p class="last-update">Last update: <span id="last-ts">—</span></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
