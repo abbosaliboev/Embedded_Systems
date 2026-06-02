@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Safety Guard — Daily Report</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: #1a1d2e; border: 1px solid #2d3748; border-radius: 12px; padding: 1.1rem 1rem; text-align: center; }
+    .stat-value { font-size: 1.8rem; font-weight: 700; }
+    .stat-label { font-size: 0.7rem; color: #718096; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.25rem; }
+    .stat-unit  { font-size: 0.75rem; color: #4a5568; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; color: #4a5568; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.5rem 0.75rem; border-bottom: 1px solid #2d3748; }
+    td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #1a1d2e; color: #a0aec0; }
+    .date-picker { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; }
+    .date-picker select { background: #1a1d2e; border: 1px solid #2d3748; color: #e2e8f0; padding: 0.45rem 0.75rem; border-radius: 8px; font-size: 0.9rem; }
+    .nav-link { color: #63b3ed; font-size: 0.85rem; text-decoration: none; }
+    .nav-link:hover { text-decoration: underline; }
+    .no-data { color: #4a5568; font-size: 0.9rem; padding: 1rem 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>Daily Report</h1>
+      <a href="/" class="nav-link">&#8592; Live Dashboard</a>
+    </div>
+    <p class="subtitle">Smart Safety Guard · Industrial IoT Safety Monitoring</p>
+  </header>
+
+  <main>
+    <div class="date-picker">
+      <span style="color:#718096; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.08em;">Date:</span>
+      <select id="day-select" onchange="loadReport(this.value)">
+        <option value="">Loading...</option>
+      </select>
+    </div>
+
+    <div class="section-title">Summary</div>
+    <div class="report-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="s-readings">—</div>
+        <div class="stat-label">Total Readings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="s-avg-temp">—</div>
+        <div class="stat-label">Avg Temperature</div>
+        <div class="stat-unit">°C</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="s-max-temp">—</div>
+        <div class="stat-label">Max Temperature</div>
+        <div class="stat-unit">°C</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="s-humidity">—</div>
+        <div class="stat-label">Avg Humidity</div>
+        <div class="stat-unit">%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="s-motion">—</div>
+        <div class="stat-label">Motion Events</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="s-gas">—</div>
+        <div class="stat-label">Gas Alerts</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="s-distance">—</div>
+        <div class="stat-label">Min Distance</div>
+        <div class="stat-unit">cm</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <section>
+        <div class="section-title">Hourly Temperature</div>
+        <canvas id="hourly-chart" height="200"></canvas>
+      </section>
+
+      <section>
+        <div class="section-title">Safety Events Breakdown</div>
+        <div id="events-table">
+          <p class="no-data">No events recorded.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script>
+    let hourlyChart = null;
+
+    const chartCtx = document.getElementById("hourly-chart").getContext("2d");
+
+    fetch("/api/days")
+      .then(r => r.json())
+      .then(days => {
+        const sel = document.getElementById("day-select");
+        if (!days.length) {
+          sel.innerHTML = '<option value="">No data yet</option>';
+          return;
+        }
+        sel.innerHTML = days.map(d => `<option value="${d}">${d}</option>`).join("");
+        loadReport(days[0]);
+      });
+
+    function loadReport(day) {
+      if (!day) return;
+      fetch(`/api/report?date=${day}`)
+        .then(r => r.json())
+        .then(render);
+    }
+
+    function render(data) {
+      const s = data.stats;
+      document.getElementById("s-readings").textContent = s.total_readings ?? "—";
+      document.getElementById("s-avg-temp").textContent  = s.avg_temp     ?? "—";
+      document.getElementById("s-max-temp").textContent  = s.max_temp     ?? "—";
+      document.getElementById("s-humidity").textContent  = s.avg_humidity ?? "—";
+      document.getElementById("s-motion").textContent    = s.motion_count ?? "—";
+      document.getElementById("s-gas").textContent       = s.gas_count    ?? "—";
+      document.getElementById("s-distance").textContent  = s.min_distance ?? "—";
+
+      // Hourly chart
+      const labels = data.hourly_temp.map(h => h.hour + ":00");
+      const temps  = data.hourly_temp.map(h => h.avg_temp);
+
+      if (hourlyChart) hourlyChart.destroy();
+      hourlyChart = new Chart(chartCtx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Avg Temp (°C)",
+            data: temps,
+            backgroundColor: "rgba(252,129,129,0.5)",
+            borderColor: "#fc8181",
+            borderWidth: 1,
+            borderRadius: 4,
+          }],
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "#a0aec0", font: { size: 11 } } } },
+          scales: {
+            x: { ticks: { color: "#4a5568" }, grid: { color: "#2d3748" } },
+            y: { ticks: { color: "#fc8181" }, grid: { color: "#2d3748" } },
+          },
+        },
+      });
+
+      // Events table
+      const evBox = document.getElementById("events-table");
+      if (!data.events.length) {
+        evBox.innerHTML = '<p class="no-data">No safety events recorded.</p>';
+        return;
+      }
+      evBox.innerHTML = `
+        <table>
+          <thead><tr><th>Event Type</th><th>Count</th></tr></thead>
+          <tbody>
+            ${data.events.map(e => `
+              <tr>
+                <td><span class="event-type ${e.event_type}">${e.event_type}</span></td>
+                <td>${e.cnt}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>`;
+    }
+  </script>
+</body>
+</html>

@@ -1,5 +1,3 @@
-import os
-
 # GPIO pin assignments — based on Smart IoT Box hardware configuration
 
 # --- Sensor Pins ---
@@ -29,11 +27,5 @@ BUZZER_DURATION = 3.0       # Seconds buzzer stays on after alert
 WEB_HOST = "0.0.0.0"
 WEB_PORT = 5000
 
-# --- Database (MySQL) ---
-# On Railway these are set automatically by the MySQL plugin.
-# On Pi, set them manually or export as env vars before running.
-DB_HOST     = os.getenv("MYSQLHOST",     os.getenv("DB_HOST",     "localhost"))
-DB_PORT     = int(os.getenv("MYSQLPORT", os.getenv("DB_PORT",     "3306")))
-DB_USER     = os.getenv("MYSQLUSER",     os.getenv("DB_USER",     "pi"))
-DB_PASSWORD = os.getenv("MYSQLPASSWORD", os.getenv("DB_PASSWORD", ""))
-DB_NAME     = os.getenv("MYSQLDATABASE", os.getenv("DB_NAME",     "safety_guard"))
+# --- Database ---
+DB_PATH = "safety_logs.db"

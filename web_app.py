@@ -7,8 +7,8 @@ import json
 import os
 import queue
 import logging
-from flask import Flask, render_template, Response, jsonify
-from database import get_latest_reading, get_recent_readings, get_recent_events
+from flask import Flask, render_template, Response, jsonify, request
+from database import get_latest_reading, get_recent_readings, get_recent_events, get_daily_report, get_available_days, insert_event
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,36 @@ def api_history():
 def api_events():
     events = get_recent_events(limit=100)
     return jsonify(events)
+
+
+@app.route("/api/detection", methods=["POST"])
+def api_detection():
+    """Receives YOLO detection results from Jetson Nano."""
+    data = request.get_json(silent=True) or {}
+    in_zone = data.get("in_danger_zone", False)
+    conf = data.get("confidence", 0.0)
+
+    if in_zone:
+        insert_event("PERSON_DETECTED", f"Confidence: {conf:.0%}")
+        push_sse_update({"alert": "PERSON_DETECTED", "confidence": conf})
+
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/report")
+def api_report():
+    day = request.args.get("date")  # ?date=2026-05-05  (optional)
+    return jsonify(get_daily_report(day))
+
+
+@app.route("/api/days")
+def api_days():
+    return jsonify(get_available_days())
+
+
+@app.route("/report")
+def report_page():
+    return render_template("report.html")
 
 
 @app.route("/stream")

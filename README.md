@@ -1,93 +1,91 @@
 # Smart Safety Guard
 
-Industrial IoT safety monitoring system for Raspberry Pi + Smart IoT Box.
+IoT & AI-Based Real-Time Industrial Safety Monitoring System
 
-Reads PIR, Ultrasonic, MQ-2 gas, and DHT11 sensors, saves all readings to a
-local SQLite database, triggers buzzer/LED/fan actuators on safety events, and
-serves a real-time web dashboard accessible from any device on the local network.
+## Overview
 
-## Hardware (Smart IoT Box GPIO mapping)
+Smart Safety Guard is a two-node edge computing system that combines IoT sensor fusion (Raspberry Pi 3) with AI-powered computer vision (Jetson Nano) to monitor industrial environments 24/7. All data flows into a central Flask backend running on the Pi, which serves a live web dashboard and sends instant Telegram alerts.
 
-| Component      | Pin      | Role                          |
-|----------------|----------|-------------------------------|
-| PIR sensor     | GPIO 23  | Motion detection              |
-| Ultrasonic TRIG| GPIO 17  | Distance measurement          |
-| Ultrasonic ECHO| GPIO 27  | Distance measurement          |
-| MQ-2 (DO pin)  | GPIO 25  | Gas / smoke detection         |
-| DHT11          | GPIO 4   | Temperature & humidity        |
-| Buzzer         | GPIO 18  | Audible alarm                 |
-| DC Fan         | GPIO 24  | Ventilation / cooling         |
-| LED Red        | GPIO 22  | Danger indicator              |
-| LED Green      | GPIO 11  | Safe indicator                |
-
-Adjust any pin in `config.py` to match your exact wiring.
-
-## Installation
-
-```bash
-# On the Raspberry Pi
-sudo apt update && sudo apt upgrade -y
-pip install -r requirements.txt
-```
-
-> **Note:** `Adafruit_DHT` may need to be installed from source on newer Pi OS versions:
-> ```bash
-> pip install adafruit-circuitpython-dht
-> # then change the import in sensors.py accordingly
-> ```
-
-## Running
-
-```bash
-python main.py
-```
-
-Open the dashboard in any browser on the same network:
-```
-http://<raspberry-pi-ip>:5000
-```
-
-Find your Pi's IP with: `hostname -I`
-
-## Project Structure
+## System Architecture
 
 ```
-.
-├── main.py          # Entry point — starts sensor loop + web server
-├── config.py        # GPIO pins, thresholds, timing
-├── sensors.py       # Hardware abstraction (reads sensors, drives actuators)
-├── alerts.py        # Safety logic — evaluates readings, logs events
-├── database.py      # SQLite CRUD helpers
-├── web_app.py       # Flask app + SSE endpoint
+┌─────────────────────────┐         ┌─────────────────────────────────────┐
+│      Jetson Nano        │         │          Raspberry Pi 3              │
+│    (AI Vision Hub)      │         │       (Central Backend Hub)          │
+│                         │  POST   │                                      │
+│  USB Webcam             │────────▶│  Flask REST API  :5000               │
+│  YOLOv8n model          │  /api/  │  SQLite database                     │
+│  Person detection       │detection│  Sensor polling loop                 │
+│  Danger zone logic      │         │  Telegram Bot                        │
+│                         │         │  Web Dashboard                       │
+└─────────────────────────┘         │                                      │
+                                    │  Sensors:                            │
+┌─────────────────────────┐         │    MQ-2 Gas · DHT22 · PIR            │
+│      Web Browser        │◀────────│    Ultrasonic · Sound                │
+│   (any device on LAN)   │  HTML/  │                                      │
+│   http://<PI_IP>:5000   │  SSE    │  Actuators:                          │
+└─────────────────────────┘         │    LED · Fan · DC Motor              │
+                                    └─────────────────────────────────────┘
+┌─────────────────────────┐                         │
+│     Telegram Bot        │◀────────────────────────┘
+│  /status /snapshot      │       alerts
+│  /history /alert off    │
+└─────────────────────────┘
+```
+
+## Repository Structure
+
+```
+smart_safety_guard/
+├── main.py               # Entry point — sensor loop + Flask server + Telegram bot
+├── config.py             # All GPIO pins, thresholds, API tokens
+├── sensors.py            # Hardware abstraction (reads sensors, drives actuators)
+├── alerts.py             # Safety logic — evaluates readings, logs events
+├── database.py           # SQLite CRUD + daily report queries
+├── web_app.py            # Flask routes, SSE endpoint, detection API
+├── telegram_bot.py       # Telegram bot — alerts + command handlers
+│
+├── jetson/
+│   └── detector.py       # Runs on Jetson Nano — YOLO inference + POSTs to Pi
+│
 ├── templates/
-│   └── index.html   # Dashboard HTML
+│   ├── index.html        # Live sensor dashboard
+│   └── report.html       # Daily report page
+│
 ├── static/
-│   ├── style.css    # Dark-theme styles
-│   └── app.js       # Live chart + SSE client
-├── requirements.txt
-└── safety_logs.db   # Created automatically on first run
+│   ├── style.css
+│   └── app.js
+│
+├── docs/
+│   ├── ARCHITECTURE.md   # Detailed architecture decisions
+│   ├── SETUP_PI.md       # Pi 3 setup guide
+│   ├── SETUP_JETSON.md   # Jetson Nano setup guide
+│   └── API.md            # REST API reference
+│
+├── requirements.txt      # Pi dependencies
+├── requirements-web.txt  # Railway / web-only dependencies
+└── README.md
 ```
 
-## Dashboard Features
+## Quick Start
 
-- **Live sensor cards** — update in real-time via Server-Sent Events (no page refresh)
-- **Temperature & humidity chart** — last 60 readings with dual Y-axis
-- **Safety event log** — timestamped table of all MOTION / GAS / PROXIMITY / OVERHEAT events
-- **Status badge** — turns red and pulses when any alert is active
+See the full setup guides:
+- [Raspberry Pi 3 Setup](docs/SETUP_PI.md)
+- [Jetson Nano Setup](docs/SETUP_JETSON.md)
 
-## Alert Logic
+## Team
 
-| Alert type   | Trigger condition                                 | Actuator response      |
-|--------------|---------------------------------------------------|------------------------|
-| MOTION       | PIR pin HIGH                                      | Buzzer + Red LED       |
-| PROXIMITY    | Distance < 50 cm (configurable)                   | Buzzer + Red LED       |
-| GAS          | MQ-2 digital output HIGH                         | Buzzer + Red LED + Fan |
-| OVERHEAT     | Temperature > 40 °C (configurable)               | Buzzer + Red LED + Fan |
+| Member | Responsibilities |
+|--------|-----------------|
+| Ali | AI model (YOLOv8), Frontend, Telegram Bot |
+| 전설민 | Backend API, Database, AI integration |
 
-Events are edge-triggered (logged once on transition, not every poll cycle).
+## Tech Stack
 
-## Simulation Mode
-
-If `RPi.GPIO` or `Adafruit_DHT` are not installed (e.g. running on a laptop for
-development), `sensors.py` automatically falls back to randomised mock data so
-the full application stack can be tested without hardware.
+| Layer | Technology |
+|-------|-----------|
+| IoT Hardware | Raspberry Pi 3, Jetson Nano, USB Webcam |
+| Backend | Python 3, Flask, SQLite |
+| AI / Vision | YOLOv8n, OpenCV |
+| Notifications | python-telegram-bot |
+| Frontend | HTML/CSS/JS, Chart.js, SSE |
