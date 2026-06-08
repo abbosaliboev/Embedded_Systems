@@ -1,133 +1,87 @@
-# Raspberry Pi 3 — Setup Guide
+﻿# Raspberry Pi 3 Setup Guide
 
-## Hardware
+## Requirements
+- Raspberry Pi 3 Model B+ with Raspberry Pi OS (Bullseye or later)
+- Python 3.9+, connected to local network
 
-| Component | GPIO Pin | Notes |
-|-----------|----------|-------|
-| PIR Sensor | GPIO 23 | Digital input |
-| Ultrasonic TRIG | GPIO 17 | |
-| Ultrasonic ECHO | GPIO 27 | |
-| MQ-2 Gas (DO) | GPIO 25 | Digital output pin |
-| DHT22 | GPIO 4 | Change `DHT_TYPE=22` in config.py |
-| Sound Sensor (DO) | GPIO 24 | Digital output pin |
-| Buzzer | GPIO 18 | |
-| Fan | GPIO 24 | |
-| LED Red | GPIO 22 | |
-| LED Green | GPIO 11 | |
-
-> Adjust any pin in `config.py` to match your exact wiring.
-
----
-
-## Step 1 — OS
-
-Use **Raspberry Pi OS Lite** (64-bit) for minimal RAM usage. Flash with Raspberry Pi Imager.
-
-Enable SSH and configure WiFi in the imager before flashing.
-
----
-
-## Step 2 — Static IP (recommended)
-
-So the Jetson always knows where to send detection results:
-
-```bash
-sudo nano /etc/dhcpcd.conf
-```
-
-Add at the bottom:
-```
-interface wlan0
-static ip_address=192.168.1.100/24
-static routers=192.168.1.1
-static domain_name_servers=8.8.8.8
-```
-
-```bash
-sudo reboot
-```
-
----
-
-## Step 3 — System packages
+## 1. Install Dependencies
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install python3-pip python3-venv git -y
+sudo apt install -y python3-pip python3-dev git
+
+git clone https://github.com/abbosaliboev/Embedded_Systems.git
+cd Embedded_Systems
+pip3 install -r requirements.txt
+pip3 install Adafruit_DHT
 ```
 
----
+## 2. Configure
 
-## Step 4 — Clone the project
+Edit `config.py`:
+```python
+GROQ_API_KEY = "gsk_..."          # Get free key at console.groq.com
+TELEGRAM_BOT_TOKEN = "12345:AAB..." # From @BotFather
+GAS_ALERT_ACTIVE = True            # Set False if sensor unreliable
+DISTANCE_DANGER_CM = 50            # Proximity threshold (cm)
+TEMP_HIGH_CELSIUS = 40.0           # Overheat threshold
+```
+
+## 3. Run
 
 ```bash
-git clone <repo-url> ~/smart_safety_guard
-cd ~/smart_safety_guard
+python3 main.py
+# Dashboard: http://<PI_IP>:5000
 ```
 
----
-
-## Step 5 — Python dependencies
+## 4. Auto-start on Boot
 
 ```bash
-pip install -r requirements.txt
+sudo nano /etc/systemd/system/safety_guard.service
 ```
-
-If `Adafruit_DHT` fails:
-```bash
-pip install adafruit-circuitpython-dht
-```
-Then update the import in `sensors.py` accordingly.
-
----
-
-## Step 6 — Configure
-
-```bash
-nano config.py
-```
-
-Key values to check:
-- `DHT_TYPE` — set to `22` for DHT22
-- `MQ2_DIGITAL_PIN` — verify against your wiring
-- `TELEGRAM_TOKEN` — paste your bot token
-- `TELEGRAM_CHAT_ID` — paste your chat ID
-
----
-
-## Step 7 — Run
-
-```bash
-python main.py
-```
-
-Dashboard: `http://<PI_IP>:5000`
-Daily report: `http://<PI_IP>:5000/report`
-
----
-
-## Step 8 — Auto-start on boot (optional)
-
-```bash
-sudo nano /etc/systemd/system/safety-guard.service
-```
-
 ```ini
 [Unit]
 Description=Smart Safety Guard
 After=network.target
 
 [Service]
-User=team4
-WorkingDirectory=/home/team4/smart_safety_guard
+User=pi
+WorkingDirectory=/home/pi/Embedded_Systems
 ExecStart=/usr/bin/python3 main.py
 Restart=always
 
 [Install]
 WantedBy=multi-user.target
 ```
-
 ```bash
-sudo systemctl enable safety-guard
-sudo systemctl start safety-guard
+sudo systemctl enable safety_guard && sudo systemctl start safety_guard
 ```
+
+## 5. GPIO Wiring
+
+| Sensor/Actuator   | GPIO BCM | Physical Pin |
+|-------------------|----------|--------------|
+| PIR motion        | 4        | Pin 7        |
+| DHT22 data        | 27       | Pin 13       |
+| HC-SR04 TRIG      | 18       | Pin 12       |
+| HC-SR04 ECHO      | 21       | Pin 40       |
+| MQ-2 digital      | 25       | Pin 22       |
+| Buzzer            | 20       | Pin 38       |
+| LED Danger (Red)  | 12       | Pin 32       |
+| LED Safe (Green)  | 13       | Pin 33       |
+| LED Blue 1        | 5        | Pin 29       |
+| LED Blue 2        | 6        | Pin 31       |
+| LED Blue 3        | 19       | Pin 35       |
+
+## Troubleshooting
+
+**Gas sensor always triggered:**
+Set `GAS_ALERT_ACTIVE = False` in config.py temporarily.
+Hardware fix: adjust MQ-2 potentiometer until D0 LED turns off in clean air.
+
+**Telegram not sending:**
+Run `python3 main.py`, send `/start` to your bot.
+Chat_id is auto-saved to `.telegram_chat_id` file.
+
+**DHT22 no readings:**
+Check 4.7kOhm pull-up resistor on data line. System falls back to simulated data.

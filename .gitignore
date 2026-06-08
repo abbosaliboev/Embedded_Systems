@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+
+# Database & logs
+*.db
+*.log
+safety_logs.db
+server.log
+detector.log
+
+# Secrets / auto-generated
+.telegram_chat_id
+.env
+
+# Deployment scripts (local use only)
+deploy.py
+deploy_all.py
+deploy_html.py
+deploy_index.html
+deploy_report.html
+deploy_report2.html
+patch2.py
+patch3.py
+patch_remote.py
+
+# Hardware scan utilities (development only)
+full_scan.py
+hardware_scan.py
+pin_scanner.py
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

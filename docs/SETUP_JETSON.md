@@ -1,114 +1,96 @@
-# Jetson Nano — Setup Guide
+﻿# Jetson Nano Setup Guide
 
-The Jetson runs a single script (`jetson/detector.py`) that:
-1. Reads frames from the USB webcam
-2. Runs YOLOv8n inference
-3. Checks if any detected person is inside the defined danger zone
-4. POSTs the result to the Pi's REST API
+## Requirements
+- NVIDIA Jetson Nano 4GB, JetPack 4.x (Ubuntu 18.04)
+- USB Webcam, same LAN as Raspberry Pi
 
----
+## Critical: Use Python 3.8 venv
 
-## Step 1 — JetPack
-
-Use **JetPack 4.6.x** (Ubuntu 18.04 based). Flash with Balena Etcher.
-
----
-
-## Step 2 — Install dependencies
+System Python 3.6 has incompatible packages -> `Illegal instruction` crash.
+Always use the Python 3.8 virtual environment.
 
 ```bash
-sudo apt update && sudo apt upgrade -y
-sudo apt install python3-pip python3-opencv -y
-
-# PyTorch for Jetson (CUDA-enabled wheel)
-pip3 install torch torchvision --index-url https://developer.download.nvidia.com/...
-# See: https://forums.developer.nvidia.com/t/pytorch-for-jetson
-
-# Ultralytics YOLOv8
-pip3 install ultralytics requests
+source ~/detector_venv/bin/activate
+python3 -c "import cv2; print(cv2.__version__)"  # should be 4.x
 ```
 
----
-
-## Step 3 — Copy the detector script
-
-Copy only the `jetson/` folder to the Jetson:
+## Setup from Scratch (if venv missing)
 
 ```bash
-scp -r jetson/ <jetson-user>@<JETSON_IP>:~/smart_safety_guard/
+sudo apt install python3.8 python3.8-venv -y
+python3.8 -m venv ~/detector_venv
+source ~/detector_venv/bin/activate
+pip install requests numpy opencv-python==4.8.0.76
 ```
 
----
-
-## Step 4 — Configure
-
-Edit `jetson/detector.py` and set:
-
-```python
-PI_API_URL   = "http://192.168.1.100:5000/api/detection"  # Pi's static IP
-CAMERA_INDEX = 0       # USB webcam index (try 0 or 1)
-CONFIDENCE   = 0.5     # Minimum detection confidence
-```
-
-Danger zone is defined as a rectangle in pixel coordinates:
-```python
-DANGER_ZONE = (x1, y1, x2, y2)  # top-left and bottom-right corners
-```
-
-Adjust these by running the camera preview first to see the frame dimensions.
-
----
-
-## Step 5 — Run
+## Run Detector
 
 ```bash
-cd ~/smart_safety_guard
+source ~/detector_venv/bin/activate
+cd ~/Embedded_Systems
 python3 jetson/detector.py
 ```
 
-You should see console output like:
+Expected output:
 ```
-[INFO] Camera opened — 1280x720
-[INFO] Model loaded: yolov8n.pt
-[DETECTION] Person in danger zone (conf=0.87) → sent to Pi
+[WARNING] torch / YOLOv5 not available - sending raw frames only.
+[INFO] Camera 640x480 | YOLO: NO | PI: http://10.198.137.204:5000
 ```
+Raw frame mode: camera feed visible on dashboard, no person detection.
 
----
-
-## Step 6 — Auto-start on boot (optional)
+## Install PyTorch for YOLOv5 (optional)
 
 ```bash
-sudo nano /etc/systemd/system/yolo-detector.service
+# JetPack 4.6, Python 3.8:
+wget https://nvidia.box.com/shared/static/ssf2v7pf5i245fk4i0q926hy4imzs2ph.whl \
+     -O torch-1.11.0-cp38-cp38-linux_aarch64.whl
+pip install torch-1.11.0-cp38-cp38-linux_aarch64.whl
+python3 -c "import torch; print(torch.__version__)"
 ```
 
+## Configure Pi IP
+
+Edit `jetson/detector.py` line 25:
+```python
+PI_BASE_URL = "http://10.198.137.204:5000"  # Your Pi IP
+```
+
+## Auto-start on Boot
+
+```bash
+sudo nano /etc/systemd/system/detector.service
+```
 ```ini
 [Unit]
-Description=YOLO Safety Detector
+Description=Smart Safety Detector
 After=network.target
 
 [Service]
-User=jetson
-WorkingDirectory=/home/jetson/smart_safety_guard
-ExecStart=/usr/bin/python3 jetson/detector.py
+User=dalab
+WorkingDirectory=/home/dalab/Embedded_Systems
+ExecStart=/home/dalab/detector_venv/bin/python3 jetson/detector.py
 Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 ```
-
 ```bash
-sudo systemctl enable yolo-detector
-sudo systemctl start yolo-detector
+sudo systemctl enable detector && sudo systemctl start detector
 ```
 
----
+## Troubleshooting
 
-## Danger Zone Calibration
+**Illegal instruction (core dumped):**
+Use venv python3.8, NOT system `python3` (3.6).
 
-Run this helper on the Jetson to visually define the danger zone:
-
+**Camera not found:**
 ```bash
-python3 jetson/detector.py --calibrate
+ls /dev/video*
+python3 -c "import cv2; cap=cv2.VideoCapture(0); print(cap.isOpened())"
 ```
 
-Click and drag on the preview window to draw the zone. The coordinates are printed to the terminal — copy them into `DANGER_ZONE`.
+**Pi not reachable:**
+```bash
+curl http://10.198.137.204:5000/api/frame_info
+```

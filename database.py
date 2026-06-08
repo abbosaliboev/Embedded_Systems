@@ -18,9 +18,9 @@ def init_db():
             CREATE TABLE IF NOT EXISTS sensor_readings (
                 id        INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp TEXT    NOT NULL,
-                pir       INTEGER NOT NULL,
+                pir       INTEGER NOT NULL DEFAULT 0,
                 distance  REAL,
-                gas       INTEGER NOT NULL,
+                gas       INTEGER NOT NULL DEFAULT 0,
                 temp      REAL,
                 humidity  REAL
             )
@@ -33,6 +33,27 @@ def init_db():
                 details    TEXT
             )
         """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS vision_events (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp       TEXT NOT NULL,
+                person_detected INTEGER NOT NULL DEFAULT 0,
+                in_danger_zone  INTEGER NOT NULL DEFAULT 0,
+                confidence      REAL
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS ai_analyses (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp    TEXT NOT NULL,
+                trigger      TEXT NOT NULL,
+                threat_level TEXT NOT NULL,
+                scene_desc   TEXT,
+                risk         TEXT,
+                action       TEXT,
+                summary      TEXT
+            )
+        """)
         conn.commit()
     logger.info("SQLite database ready at %s", DB_PATH)
 
@@ -43,7 +64,7 @@ def insert_reading(pir, distance, gas, temp, humidity):
         conn.execute(
             "INSERT INTO sensor_readings (timestamp, pir, distance, gas, temp, humidity) "
             "VALUES (?, ?, ?, ?, ?, ?)",
-            (ts, int(pir), distance, int(gas), temp, humidity),
+            (ts, int(pir or 0), distance, int(gas or 0), temp, humidity),
         )
         conn.commit()
 
@@ -57,6 +78,29 @@ def insert_event(event_type, details=""):
         )
         conn.commit()
     logger.warning("Safety event: [%s] %s", event_type, details)
+
+
+def insert_vision_event(person_detected, in_danger_zone, confidence):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with get_connection() as conn:
+        conn.execute(
+            "INSERT INTO vision_events (timestamp, person_detected, in_danger_zone, confidence) "
+            "VALUES (?, ?, ?, ?)",
+            (ts, int(bool(person_detected)), int(bool(in_danger_zone)), float(confidence or 0)),
+        )
+        conn.commit()
+
+
+def insert_ai_analysis(trigger, threat_level, scene_desc, risk, action, summary):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with get_connection() as conn:
+        conn.execute(
+            "INSERT INTO ai_analyses (timestamp, trigger, threat_level, scene_desc, risk, action, summary) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (ts, trigger, threat_level, scene_desc, risk, action, summary),
+        )
+        conn.commit()
+    logger.info("AI analysis saved: [%s] threat=%s", trigger, threat_level)
 
 
 def get_latest_reading():
@@ -83,16 +127,27 @@ def get_recent_events(limit=50):
     return [dict(r) for r in rows]
 
 
-def get_daily_report(day: str | None = None) -> dict:
-    """
-    Returns a summary for a given day (YYYY-MM-DD).
-    Defaults to today if day is not provided.
-    """
+def get_latest_ai_analysis():
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM ai_analyses ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+    return dict(row) if row else None
+
+
+def get_recent_ai_analyses(limit=10):
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM ai_analyses ORDER BY id DESC LIMIT ?", (limit,)
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def get_daily_report(day=None):
     if day is None:
         day = date.today().isoformat()
 
     with get_connection() as conn:
-        # Sensor averages for the day
         stats = conn.execute("""
             SELECT
                 COUNT(*)            AS total_readings,
@@ -107,7 +162,6 @@ def get_daily_report(day: str | None = None) -> dict:
             WHERE timestamp LIKE ?
         """, (day + "%",)).fetchone()
 
-        # Event breakdown
         events = conn.execute("""
             SELECT event_type, COUNT(*) AS cnt
             FROM safety_events
@@ -115,7 +169,6 @@ def get_daily_report(day: str | None = None) -> dict:
             GROUP BY event_type
         """, (day + "%",)).fetchall()
 
-        # Hourly temperature trend
         hourly = conn.execute("""
             SELECT
                 SUBSTR(timestamp, 12, 2) AS hour,
@@ -126,16 +179,24 @@ def get_daily_report(day: str | None = None) -> dict:
             ORDER BY hour
         """, (day + "%",)).fetchall()
 
+        ai_threats = conn.execute("""
+            SELECT threat_level, COUNT(*) AS cnt
+            FROM ai_analyses
+            WHERE timestamp LIKE ?
+            GROUP BY threat_level
+            ORDER BY cnt DESC
+        """, (day + "%",)).fetchall()
+
     return {
         "date": day,
         "stats": dict(stats) if stats else {},
         "events": [dict(e) for e in events],
         "hourly_temp": [dict(h) for h in hourly],
+        "ai_threats": [dict(a) for a in ai_threats],
     }
 
 
-def get_available_days() -> list[str]:
-    """Returns list of distinct days that have sensor data."""
+def get_available_days():
     with get_connection() as conn:
         rows = conn.execute("""
             SELECT DISTINCT SUBSTR(timestamp, 1, 10) AS day

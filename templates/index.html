@@ -1,86 +1,190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Smart Safety Guard — Dashboard</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>SMART SAFETY GUARD — OPS CENTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/static/style.css?v=20"/>
 </head>
 <body>
-  <header>
-    <div class="header-inner">
-      <h1>Smart Safety Guard</h1>
-      <span id="status-badge" class="badge safe">SAFE</span>
+
+<header>
+  <div class="hd-left">
+    <span class="hd-logo">⬡</span>
+    <div>
+      <span class="hd-title">SMART SAFETY GUARD</span>
+      <span class="hd-ver">v1.0.0 · RASPBERRY PI 3 + JETSON NANO</span>
     </div>
-    <p class="subtitle">Industrial IoT Safety Monitoring · Raspberry Pi</p>
-  </header>
+  </div>
+  <div class="hd-center">
+    <span class="live-dot"></span>
+    <span class="live-lbl">SYSTEM ONLINE</span>
+    <span class="hd-sep">|</span>
+    <span id="status-badge" class="status-badge safe">◆ SAFE</span>
+  </div>
+  <div class="hd-right">
+    <a href="/report" class="rpt-btn">⊞ REPORT</a>
+    <span class="clock" id="clock">00:00:00</span>
+  </div>
+</header>
 
-  <main>
-    <!-- Live sensor cards -->
-    <section class="section-title">Live Sensor Readings</section>
-    <div class="cards">
+<div id="alert-banner" class="alert-banner hidden">
+  <span class="alert-icon">▲</span>
+  <span class="alert-txt">ALERT ACTIVE:</span>
+  <span id="alert-list"></span>
+</div>
 
-      <div class="card" id="card-pir">
-        <div class="card-icon">&#x1F6B6;</div>
-        <div class="card-label">Motion (PIR)</div>
-        <div class="card-value" id="val-pir">—</div>
+<div class="grid">
+
+  <!-- LEFT: Camera -->
+  <div class="col-left">
+    <div class="sec-hd">
+      <span class="sec-title">CAMERA FEED</span>
+      <span class="live-pill"><span class="live-dot sm"></span>LIVE</span>
+    </div>
+    <div class="cam-wrap">
+      <img id="cam-img" src="/video_feed" alt=""/>
+      <div id="cam-offline" class="cam-offline hidden">
+        <div class="cam-off-icon">◎</div>
+        <div>SIGNAL LOST</div>
+        <div class="cam-off-sub">AWAITING JETSON NANO</div>
       </div>
+      <div class="cam-overlay-tl">CAM-01 · ZONE-A</div>
+      <div class="cam-overlay-br" id="cam-ts">--:--:--</div>
+    </div>
+    <div class="cam-detect" id="cam-conf"></div>
+  </div>
 
-      <div class="card" id="card-distance">
-        <div class="card-icon">&#x1F4CF;</div>
-        <div class="card-label">Distance</div>
-        <div class="card-value" id="val-distance">—</div>
-        <div class="card-unit">cm</div>
+  <!-- MID: Sensors + Controls + Log -->
+  <div class="col-mid">
+
+    <div class="sec-hd">
+      <span class="sec-title">SENSOR MATRIX</span>
+      <span class="sec-count" id="alert-count">0 ALERTS</span>
+    </div>
+    <div class="sensor-row">
+      <div class="scard" id="card-distance">
+        <div class="scard-lbl">DISTANCE</div>
+        <div class="scard-val" id="val-distance">—</div>
+        <div class="scard-unit">CM</div>
+        <div class="scard-bar"><div class="scard-fill" id="fill-distance"></div></div>
       </div>
-
-      <div class="card" id="card-gas">
-        <div class="card-icon">&#x1F4A8;</div>
-        <div class="card-label">Gas / Smoke</div>
-        <div class="card-value" id="val-gas">—</div>
+      <div class="scard" id="card-gas">
+        <div class="scard-lbl">GAS/SMOKE</div>
+        <div class="scard-val" id="val-gas">—</div>
+        <div class="scard-unit">MQ-2</div>
+        <div class="scard-bar"><div class="scard-fill" id="fill-gas"></div></div>
       </div>
-
-      <div class="card" id="card-temp">
-        <div class="card-icon">&#x1F321;&#xFE0F;</div>
-        <div class="card-label">Temperature</div>
-        <div class="card-value" id="val-temp">—</div>
-        <div class="card-unit">°C</div>
+      <div class="scard" id="card-temp">
+        <div class="scard-lbl">TEMPERATURE</div>
+        <div class="scard-val" id="val-temp">—</div>
+        <div class="scard-unit">°C</div>
+        <div class="scard-bar"><div class="scard-fill" id="fill-temp"></div></div>
       </div>
-
-      <div class="card" id="card-humidity">
-        <div class="card-icon">&#x1F4A7;</div>
-        <div class="card-label">Humidity</div>
-        <div class="card-value" id="val-humidity">—</div>
-        <div class="card-unit">%</div>
+      <div class="scard" id="card-humidity">
+        <div class="scard-lbl">HUMIDITY</div>
+        <div class="scard-val" id="val-humidity">—</div>
+        <div class="scard-unit">RH%</div>
+        <div class="scard-bar"><div class="scard-fill" id="fill-humidity"></div></div>
       </div>
-
+      <div class="scard" id="card-person">
+        <div class="scard-lbl">PERSON</div>
+        <div class="scard-val" id="val-person">—</div>
+        <div class="scard-unit" id="val-conf">YOLO</div>
+        <div class="scard-bar"><div class="scard-fill" id="fill-person"></div></div>
+      </div>
     </div>
 
-    <!-- Active alerts banner -->
-    <div id="alert-banner" class="alert-banner hidden">
-      <strong>&#x26A0;&#xFE0F; ACTIVE ALERTS:</strong>
-      <span id="alert-list"></span>
-    </div>
-
-    <div class="two-col">
-      <!-- Temperature history chart -->
-      <section>
-        <div class="section-title">Temperature History (last 60 readings)</div>
-        <canvas id="temp-chart" height="180"></canvas>
-      </section>
-
-      <!-- Safety event log -->
-      <section>
-        <div class="section-title">Safety Event Log</div>
-        <div class="event-log" id="event-log">
-          <p class="no-events">No events yet.</p>
+    <div class="row-2">
+      <div>
+        <div class="sec-hd mt6"><span class="sec-title">ACTUATOR STATUS</span></div>
+        <div class="act-row">
+          <div class="acard" id="act-led">
+            <div class="adot" id="ind-led"></div>
+            <div class="aname">LED</div>
+            <div class="aval" id="state-led">OFF</div>
+          </div>
+          <div class="acard" id="act-buzzer">
+            <div class="adot" id="ind-buzzer"></div>
+            <div class="aname">BUZZER</div>
+            <div class="aval" id="state-buzzer">OFF</div>
+          </div>
+          <div class="acard" id="act-fan">
+            <div class="adot" id="ind-fan"></div>
+            <div class="aname">COOLER</div>
+            <div class="aval" id="state-fan">OFF</div>
+          </div>
         </div>
-      </section>
+      </div>
+      <div>
+        <div class="sec-hd mt6"><span class="sec-title">MANUAL OVERRIDE</span></div>
+        <div class="btn-grid">
+          <button class="btn btn-red"   onclick="control('test_buzzer')">▶ BUZZER TEST</button>
+          <button class="btn btn-amber" onclick="control('silence')">■ SILENCE</button>
+          <button class="btn btn-green" onclick="control('led_on')">◉ LED ON</button>
+          <button class="btn"           onclick="control('led_off')">◎ LED OFF</button>
+          <button class="btn btn-green" onclick="control('fan_on')">◉ COOLER ON</button>
+          <button class="btn"           onclick="control('fan_off')">◎ COOLER OFF</button>
+        </div>
+      </div>
     </div>
 
-    <p class="last-update">Last update: <span id="last-ts">—</span></p>
-  </main>
+    <div class="sec-hd mt6">
+      <span class="sec-title">INCIDENT LOG</span>
+      <span class="live-pill sm"><span class="live-dot sm"></span>LIVE</span>
+    </div>
+    <div class="elog" id="event-log">
+      <div class="elog-empty">— NO INCIDENTS RECORDED —</div>
+    </div>
+    <div class="footer-bar">
+      <span>SYS · RASPBERRY PI 3B+</span>
+      <span>UPD: <span id="last-ts">—</span></span>
+    </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-  <script src="/static/app.js"></script>
+  </div>
+
+  <!-- RIGHT: AI + Charts -->
+  <div class="col-right">
+
+    <div class="sec-hd">
+      <span class="sec-title">AI INCIDENT ANALYSIS</span>
+      <button class="btn btn-green analyze-btn" id="analyze-btn" onclick="analyze()">▶ ANALYZE</button>
+    </div>
+    <div class="ai-panel">
+      <div id="ai-empty" class="ai-empty">[ AWAITING TRIGGER ]<br/><span class="ai-sub">Press ANALYZE to inspect current scene</span></div>
+      <div id="ai-result" class="hidden">
+        <div class="ai-threat-row">
+          <span class="ai-threat-lbl">THREAT LEVEL</span>
+          <span id="ai-threat" class="threat">—</span>
+        </div>
+        <div class="ai-field">
+          <div class="ai-lbl">◈ SCENE ASSESSMENT</div>
+          <div id="ai-scene" class="ai-val">—</div>
+        </div>
+        <div class="ai-field ai-action">
+          <div class="ai-lbl">◉ RECOMMENDED ACTION</div>
+          <div id="ai-action" class="ai-val">—</div>
+        </div>
+        <div class="ai-field">
+          <div class="ai-lbl">◎ SUMMARY</div>
+          <div id="ai-summary" class="ai-val muted">—</div>
+        </div>
+        <div class="ai-foot"><span id="ai-time">—</span></div>
+      </div>
+    </div>
+
+    <div class="sec-hd mt6"><span class="sec-title">TEMP · HUMIDITY HISTORY</span></div>
+    <div class="chart-wrap"><canvas id="temp-chart" height="110"></canvas></div>
+
+    <div class="sec-hd mt6"><span class="sec-title">PROXIMITY HISTORY (CM)</span></div>
+    <div class="chart-wrap"><canvas id="dist-chart" height="95"></canvas></div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="/static/app.js?v=20"></script>
 </body>
 </html>
