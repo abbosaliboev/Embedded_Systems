@@ -2,961 +2,1020 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Smart Safety Guard — Presentation</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Smart Safety Guard</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700;900&display=swap" rel="stylesheet"/>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --bg:#f0f4f8;
-  --s:#ffffff;
-  --s2:#f1f5f9;
-  --bd:#cbd5e1;
-  --bd2:#e2e8f0;
-  --tx:#0f172a;
-  --mu:#64748b;
-  --sub:#475569;
-  --grn:#15803d;
-  --grn-lt:#dcfce7;
-  --grn-bd:#86efac;
-  --red:#b91c1c;
-  --red-lt:#fee2e2;
-  --red-bd:#fca5a5;
-  --ora:#c2410c;
-  --ora-lt:#ffedd5;
-  --ora-bd:#fdba74;
-  --blu:#1d4ed8;
-  --blu-lt:#dbeafe;
-  --blu-bd:#93c5fd;
-  --pur:#6d28d9;
-  --pur-lt:#f3e8ff;
-  --pur-bd:#c4b5fd;
-  --yel:#92400e;
-  --yel-lt:#fef3c7;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:   #f1f5f9;
+  --card: #ffffff;
+  --bd:   #e2e8f0;
+  --bd2:  #cbd5e1;
+  --tx:   #0f172a;
+  --sub:  #475569;
+  --mu:   #94a3b8;
+  --grn:  #16a34a;  --grn-l: #dcfce7;  --grn-b: #86efac;
+  --red:  #dc2626;  --red-l: #fee2e2;  --red-b: #fca5a5;
+  --blu:  #2563eb;  --blu-l: #dbeafe;  --blu-b: #93c5fd;
+  --ora:  #ea580c;  --ora-l: #ffedd5;  --ora-b: #fdba74;
+  --pur:  #7c3aed;  --pur-l: #f3e8ff;  --pur-b: #c4b5fd;
+  --yel:  #d97706;  --yel-l: #fef3c7;
 }
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
-  font-family:"Noto Sans KR",system-ui,sans-serif;color:var(--tx);}
+html, body { width:100%; height:100%; overflow:hidden;
+  font-family:"Noto Sans KR",sans-serif; color:var(--tx); background:var(--bg); }
 
-/* ── SLIDE ENGINE ─────────────────────────────────────────────────────── */
-.deck{width:100vw;height:100vh;position:relative;overflow:hidden;}
-.slide{
-  position:absolute;inset:0;
-  display:flex;flex-direction:column;justify-content:center;align-items:center;
-  padding:52px 64px;
-  opacity:0;transform:translateX(60px);
-  transition:all .45s cubic-bezier(.4,0,.2,1);
-  pointer-events:none;
-  background:var(--bg);
+/* ── DECK ─────────────────────────────────────────────────────── */
+.deck { width:100vw; height:100vh; position:relative; overflow:hidden; }
+.slide {
+  position:absolute; inset:0;
+  display:grid; grid-template-rows:auto 1fr;
+  padding:36px 56px 44px;
+  opacity:0; transform:translateX(50px);
+  transition:opacity .4s, transform .4s cubic-bezier(.4,0,.2,1);
+  pointer-events:none; background:var(--bg);
 }
-.slide.active{opacity:1;transform:translateX(0);pointer-events:auto;}
-.slide.exit{opacity:0;transform:translateX(-60px);}
+.slide.active  { opacity:1; transform:translateX(0); pointer-events:auto; }
+.slide.prev    { opacity:0; transform:translateX(-50px); }
 
-/* ── PROGRESS & NAV ───────────────────────────────────────────────────── */
-.progress{position:fixed;bottom:0;left:0;height:3px;background:var(--blu);transition:width .4s;}
-.nav{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
-  display:flex;gap:12px;align-items:center;z-index:99;}
-.nav-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--bd);
-  background:var(--s);color:var(--sub);cursor:pointer;
-  font-size:16px;display:flex;align-items:center;justify-content:center;
-  transition:.15s;box-shadow:0 1px 4px rgba(0,0,0,.1);}
-.nav-btn:hover{background:var(--s2);color:var(--tx);}
-.slide-counter{font-size:12px;color:var(--mu);min-width:50px;text-align:center;font-variant-numeric:tabular-nums;}
+/* ── NAV & PROGRESS ──────────────────────────────────────────── */
+.progress { position:fixed; bottom:0; left:0; height:3px; background:var(--blu); transition:width .3s; z-index:99; }
+.nav { position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+  display:flex; gap:10px; align-items:center; z-index:99; }
+.nb { width:32px; height:32px; border-radius:50%; border:1px solid var(--bd2);
+  background:var(--card); color:var(--sub); cursor:pointer; font-size:15px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 1px 4px rgba(0,0,0,.1); transition:.15s; }
+.nb:hover { background:var(--bd); }
+.nc { font-size:12px; color:var(--mu); min-width:46px; text-align:center; font-variant-numeric:tabular-nums; }
 
-/* ── BADGES ──────────────────────────────────────────────────────────── */
-.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;
-  border-radius:999px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;}
-.badge-grn{background:var(--grn-lt);color:var(--grn);border:1px solid var(--grn-bd);}
-.badge-red{background:var(--red-lt);color:var(--red);border:1px solid var(--red-bd);}
-.badge-blu{background:var(--blu-lt);color:var(--blu);border:1px solid var(--blu-bd);}
-.badge-ora{background:var(--ora-lt);color:var(--ora);border:1px solid var(--ora-bd);}
-.badge-pur{background:var(--pur-lt);color:var(--pur);border:1px solid var(--pur-bd);}
+/* ── SLIDE HEADER ─────────────────────────────────────────────── */
+.sl-hd { display:flex; align-items:center; justify-content:space-between;
+  padding-bottom:20px; border-bottom:1px solid var(--bd2); margin-bottom:24px; flex-shrink:0; }
+.sl-label { font-size:11px; font-weight:700; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--mu); }
+.badge { display:inline-flex; align-items:center; padding:3px 11px;
+  border-radius:999px; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+.bg { background:var(--grn-l); color:var(--grn); border:1px solid var(--grn-b); }
+.br { background:var(--red-l); color:var(--red); border:1px solid var(--red-b); }
+.bb { background:var(--blu-l); color:var(--blu); border:1px solid var(--blu-b); }
+.bo { background:var(--ora-l); color:var(--ora); border:1px solid var(--ora-b); }
+.bp { background:var(--pur-l); color:var(--pur); border:1px solid var(--pur-b); }
 
-/* ── TAGS ─────────────────────────────────────────────────────────────── */
-.tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;
-  text-transform:uppercase;letter-spacing:.05em;display:inline-block;}
-.tag-grn{background:var(--grn-lt);color:var(--grn);}
-.tag-red{background:var(--red-lt);color:var(--red);}
-.tag-blu{background:var(--blu-lt);color:var(--blu);}
-.tag-ora{background:var(--ora-lt);color:var(--ora);}
-.tag-pur{background:var(--pur-lt);color:var(--pur);}
-.tag-yel{background:var(--yel-lt);color:var(--yel);}
+/* ── COMMON ELEMENTS ──────────────────────────────────────────── */
+.h1 { font-size:52px; font-weight:900; line-height:1.1; color:var(--tx); }
+.h2 { font-size:36px; font-weight:900; line-height:1.15; color:var(--tx); }
+.h3 { font-size:20px; font-weight:700; color:var(--tx); }
+.body { font-size:14px; color:var(--sub); line-height:1.65; }
 
-/* ── CARDS ─────────────────────────────────────────────────────────────── */
-.card{background:var(--s);border:1px solid var(--bd2);border-radius:12px;padding:22px;box-shadow:0 1px 6px rgba(0,0,0,.07);}
-.card-sm{background:var(--s);border:1px solid var(--bd2);border-radius:10px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.card { background:var(--card); border:1px solid var(--bd2);
+  border-radius:12px; padding:20px; box-shadow:0 1px 5px rgba(0,0,0,.06); }
+.csm  { background:var(--card); border:1px solid var(--bd2);
+  border-radius:9px; padding:13px 15px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
 
-/* ── IMAGE PLACEHOLDER ────────────────────────────────────────────────── */
-.img-box{background:var(--s2);border:2px dashed var(--bd);border-radius:10px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:8px;color:var(--mu);font-size:13px;text-align:center;}
-.img-note{font-size:11px;color:var(--mu);margin-top:2px;}
+.tag { font-size:10px; font-weight:700; padding:3px 9px; border-radius:5px;
+  text-transform:uppercase; letter-spacing:.05em; display:inline-block; }
+.tg  { background:var(--grn-l); color:var(--grn); }
+.tr  { background:var(--red-l); color:var(--red); }
+.tb  { background:var(--blu-l); color:var(--blu); }
+.to  { background:var(--ora-l); color:var(--ora); }
+.tp  { background:var(--pur-l); color:var(--pur); }
+.ty  { background:var(--yel-l); color:var(--yel); }
 
-/* ── TYPOGRAPHY ───────────────────────────────────────────────────────── */
-.section-label{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;
-  color:var(--mu);margin-bottom:8px;}
-.h2{font-size:30px;font-weight:900;line-height:1.2;margin-bottom:6px;color:var(--tx);}
-.h3{font-size:20px;font-weight:700;margin-bottom:4px;color:var(--tx);}
-.body{font-size:14px;color:var(--sub);line-height:1.65;}
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+.g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
 
-/* ── GRID ─────────────────────────────────────────────────────────────── */
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;width:100%;}
-.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;width:100%;}
-.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%;}
+/* top-colored border shortcut */
+.tg-top { border-top:3px solid var(--grn); }
+.tr-top { border-top:3px solid var(--red); }
+.tb-top { border-top:3px solid var(--blu); }
+.to-top { border-top:3px solid var(--ora); }
+.tp-top { border-top:3px solid var(--pur); }
 
-/* ── MISC ──────────────────────────────────────────────────────────────── */
-.stat-big{font-size:52px;font-weight:900;line-height:1;}
-.stat-lbl{font-size:12px;color:var(--mu);margin-top:4px;font-weight:400;}
-.top-bar{width:100%;display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:28px;flex-shrink:0;}
-.slide-accent{position:absolute;left:0;top:15%;bottom:15%;width:4px;border-radius:2px;
-  background:linear-gradient(180deg,transparent,var(--blu),transparent);}
-.flow-arrow{color:var(--mu);font-size:20px;margin:0 4px;}
+/* stat */
+.stat-n { font-size:54px; font-weight:900; line-height:1; }
+.stat-l { font-size:12px; color:var(--mu); margin-top:4px; }
 
-/* ── STEPS ─────────────────────────────────────────────────────────────── */
-.step{display:flex;align-items:flex-start;gap:12px;
-  background:var(--s);border:1px solid var(--bd2);border-radius:8px;padding:12px 16px;
-  box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.step-num{width:26px;height:26px;border-radius:50%;background:var(--s2);
-  display:flex;align-items:center;justify-content:center;font-size:12px;
-  font-weight:700;color:var(--sub);flex-shrink:0;}
+/* step row */
+.step { display:flex; align-items:flex-start; gap:11px;
+  background:var(--card); border:1px solid var(--bd2); border-radius:8px;
+  padding:11px 14px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+.snum { width:24px; height:24px; border-radius:50%; background:var(--bd);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; color:var(--sub); flex-shrink:0; margin-top:1px; }
 
-/* ── CODE BLOCK ───────────────────────────────────────────────────────── */
-.code{background:#1e293b;border-radius:8px;padding:14px 18px;
-  font-family:"JetBrains Mono",monospace;font-size:11.5px;color:#cbd5e1;line-height:1.7;}
-.code .k{color:#7dd3fc;} .code .s{color:#86efac;} .code .n{color:#fdba74;} .code .c{color:#475569;}
+/* comparison table */
+.ctbl { width:100%; border-collapse:collapse; font-size:13px; }
+.ctbl th { padding:9px 13px; text-align:left; font-size:10px; font-weight:700;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--mu);
+  border-bottom:2px solid var(--bd2); background:var(--bg); }
+.ctbl td { padding:9px 13px; border-bottom:1px solid var(--bd); color:var(--sub); }
+.ctbl tr:last-child td { border-bottom:none; }
+.ctbl .our { color:var(--grn); font-weight:700; }
+.ctbl .no  { color:var(--mu); }
+.ctbl .yes { color:var(--grn); }
+.ctbl .par { color:var(--yel); }
+.ctbl .hl td { background:#f8fdf8; }
 
-/* ── TIMELINE ─────────────────────────────────────────────────────────── */
-.tl-item{display:flex;gap:14px;align-items:flex-start;}
-.tl-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0;}
-.tl-line{width:2px;background:var(--bd);flex-shrink:0;margin:0 4px;}
+/* IMG placeholder */
+.imgbox { background:var(--bg); border:2px dashed var(--bd2); border-radius:10px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; color:var(--mu); font-size:13px; text-align:center; }
+.imgnote { font-size:11px; color:var(--mu); }
 
-/* ── COMPARISON TABLE ─────────────────────────────────────────────────── */
-.comparison-table{width:100%;border-collapse:collapse;font-size:13px;}
-.comparison-table th{padding:9px 14px;text-align:left;font-size:10px;font-weight:700;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--mu);
-  border-bottom:2px solid var(--bd);background:var(--s2);}
-.comparison-table td{padding:9px 14px;border-bottom:1px solid var(--bd2);color:var(--sub);}
-.comparison-table tr:last-child td{border-bottom:none;}
-.comparison-table .our{color:var(--grn);font-weight:700;}
-.comparison-table .no{color:#94a3b8;}
-.comparison-table .yes{color:var(--grn);}
-.comparison-table .partial{color:var(--yel);}
-.comparison-table .highlight-row td{background:#f8fdf9;}
+/* timeline */
+.tli { display:flex; gap:12px; align-items:flex-start; }
+.tld { width:10px; height:10px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+.tll { width:2px; background:var(--bd2); flex-shrink:0; margin:0 4px; }
 
-/* ── TITLE SLIDE ──────────────────────────────────────────────────────── */
-.title-bg{position:absolute;inset:0;overflow:hidden;z-index:0;}
-.title-grid{position:absolute;inset:0;
-  background-image:linear-gradient(var(--bd2) 1px,transparent 1px),
-                   linear-gradient(90deg,var(--bd2) 1px,transparent 1px);
-  background-size:50px 50px;opacity:.5;}
-.title-glow{position:absolute;width:700px;height:700px;border-radius:50%;
-  background:radial-gradient(circle,rgba(29,78,216,.08),transparent 70%);
-  top:50%;left:50%;transform:translate(-50%,-50%);}
+/* flow arrow */
+.arrow { color:var(--mu); font-size:22px; flex-shrink:0; align-self:center; }
 
-/* ── NUM HIGHLIGHT ────────────────────────────────────────────────────── */
-.num-highlight{font-size:46px;font-weight:900;line-height:1;
-  background:linear-gradient(135deg,var(--blu),var(--pur));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+/* ── TITLE SLIDE ──────────────────────────────────────────────── */
+.title-slide {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:white; padding:60px;
+  background-image:
+    linear-gradient(var(--bd) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bd) 1px, transparent 1px);
+  background-size:48px 48px;
+}
+.title-glow {
+  position:absolute; width:800px; height:800px; border-radius:50%;
+  background:radial-gradient(circle, rgba(37,99,235,.06), transparent 65%);
+  top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none;
+}
 
-/* ── STAT CARD COLOR BORDERS ──────────────────────────────────────────── */
-.card-top-blu{border-top:3px solid var(--blu);}
-.card-top-grn{border-top:3px solid var(--grn);}
-.card-top-red{border-top:3px solid var(--red);}
-.card-top-ora{border-top:3px solid var(--ora);}
-.card-top-pur{border-top:3px solid var(--pur);}
+/* ── ARCH DIAGRAM ─────────────────────────────────────────────── */
+.arch-box {
+  background:var(--card); border:1.5px solid var(--bd2);
+  border-radius:10px; padding:16px 14px; text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.07);
+}
+.arch-box .title { font-size:13px; font-weight:700; margin-bottom:6px; }
+.arch-box .items { font-size:11px; color:var(--sub); line-height:1.9; text-align:left; }
+.arch-arrow {
+  display:flex; align-items:center; justify-content:center;
+  flex-direction:column; gap:2px; color:var(--mu); flex-shrink:0;
+}
+.arch-arrow svg { display:block; }
+
+/* flow connector line */
+.connector {
+  height:2px; background:linear-gradient(90deg, var(--bd2), var(--blu-b));
+  flex:1; position:relative;
+}
+.connector::after {
+  content:''; position:absolute; right:-7px; top:-5px;
+  border:6px solid transparent; border-left:8px solid var(--blu-b);
+}
 </style>
 </head>
 <body>
 <div class="deck" id="deck">
 
-<!-- ══════════════════════════════════════════════ SLIDE 1 — TITLE -->
-<section class="slide active" id="s1" style="background:white;">
-  <div class="title-bg">
-    <div class="title-grid"></div>
-    <div class="title-glow"></div>
-  </div>
-  <div style="position:relative;z-index:1;text-align:center;width:100%;">
-    <div class="badge badge-blu" style="margin-bottom:20px;">🛡️ IoT + AI 실시간 안전 시스템</div>
-    <h1 style="font-size:60px;font-weight:900;line-height:1.1;margin-bottom:12px;color:#0f172a;">
+<!-- ══ 01 TITLE ═══════════════════════════════════════════════════ -->
+<section class="slide title-slide active" id="s1" style="display:flex;position:absolute;inset:0;">
+  <div class="title-glow"></div>
+  <div style="position:relative;z-index:1;text-align:center;width:100%;max-width:860px;">
+    <div class="badge bb" style="margin-bottom:22px;font-size:12px;">IoT + AI 실시간 산업 안전 모니터링 시스템</div>
+    <h1 style="font-size:72px;font-weight:900;line-height:1.05;margin-bottom:16px;color:#0f172a;">
       Smart Safety Guard
     </h1>
-    <p style="font-size:20px;color:var(--sub);font-weight:300;margin-bottom:44px;">
-      산업 현장의 위험을 AI가 실시간으로 감지하고 대응하는 엣지 컴퓨팅 시스템
+    <p style="font-size:20px;color:var(--sub);font-weight:300;margin-bottom:48px;line-height:1.6;">
+      Raspberry Pi 3 + Jetson Nano + Groq Vision AI를 결합한<br/>엣지 컴퓨팅 기반 실시간 안전 관리 시스템
     </p>
-    <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
-      <div class="card" style="text-align:center;padding:16px 28px;border-top:3px solid var(--blu);">
+    <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
+      <div class="card tb-top" style="padding:16px 24px;text-align:center;min-width:160px;">
         <div style="font-size:22px;font-weight:900;color:var(--blu);">Raspberry Pi 3</div>
-        <div style="font-size:12px;color:var(--mu);">센서 허브 &amp; 백엔드</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:4px;">센서 허브 &amp; 백엔드</div>
       </div>
-      <div class="card" style="text-align:center;padding:16px 28px;border-top:3px solid var(--grn);">
+      <div class="card tg-top" style="padding:16px 24px;text-align:center;min-width:160px;">
         <div style="font-size:22px;font-weight:900;color:var(--grn);">Jetson Nano</div>
-        <div style="font-size:12px;color:var(--mu);">AI 비전 노드</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:4px;">AI 비전 노드</div>
       </div>
-      <div class="card" style="text-align:center;padding:16px 28px;border-top:3px solid var(--pur);">
+      <div class="card tp-top" style="padding:16px 24px;text-align:center;min-width:160px;">
         <div style="font-size:22px;font-weight:900;color:var(--pur);">Groq Vision AI</div>
-        <div style="font-size:12px;color:var(--mu);">장면 분석 엔진</div>
+        <div style="font-size:12px;color:var(--mu);margin-top:4px;">장면 분석 엔진</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 2 — PROBLEM -->
+<!-- ══ 02 PROBLEM ═══════════════════════════════════════════════ -->
 <section class="slide" id="s2">
-  <div class="slide-accent"></div>
-  <div class="top-bar">
-    <span class="section-label">문제 인식</span>
-    <span class="badge badge-red">산업재해 현황</span>
-  </div>
-  <div class="h2" style="margin-bottom:28px;">매년 반복되는 산업 현장 사고 😟</div>
-  <div class="grid-3" style="margin-bottom:22px;">
-    <div class="card card-top-red" style="text-align:center;">
-      <div class="stat-big" style="color:var(--red);">89,000</div>
-      <div class="stat-lbl">연간 산업재해 건수 (한국)</div>
+  <div class="sl-hd"><span class="sl-label">문제 인식</span><span class="badge br">산업재해 현황</span></div>
+  <div style="display:flex;flex-direction:column;gap:18px;height:100%;">
+    <div class="h2">매년 반복되는 산업 현장 사고</div>
+    <div class="g3">
+      <div class="card tr-top" style="text-align:center;padding:28px 20px;">
+        <div class="stat-n" style="color:var(--red);">89,000</div>
+        <div class="stat-l">연간 산업재해 건수 (한국)</div>
+      </div>
+      <div class="card to-top" style="text-align:center;padding:28px 20px;">
+        <div class="stat-n" style="color:var(--ora);">2,300<span style="font-size:28px;">명</span></div>
+        <div class="stat-l">연간 산업재해 사망자</div>
+      </div>
+      <div class="card tb-top" style="text-align:center;padding:28px 20px;">
+        <div class="stat-n" style="color:var(--blu);">27조</div>
+        <div class="stat-l">연간 경제적 손실 (원)</div>
+      </div>
     </div>
-    <div class="card card-top-ora" style="text-align:center;">
-      <div class="stat-big" style="color:var(--ora);">2,300<span style="font-size:24px;">명</span></div>
-      <div class="stat-lbl">연간 산업재해 사망자</div>
+    <div class="imgbox" style="flex:1;">
+      <div style="font-size:14px;font-weight:600;">산업 현장 사고 뉴스 이미지 삽입</div>
+      <div class="imgnote">가스 폭발 / 화재 / 작업자 사고 관련 사진</div>
     </div>
-    <div class="card card-top-blu" style="text-align:center;">
-      <div class="stat-big" style="color:var(--blu);">27조</div>
-      <div class="stat-lbl">연간 경제적 손실 (원)</div>
-    </div>
-  </div>
-  <div class="img-box" style="width:100%;height:150px;">
-    <span style="font-size:32px;">🖼️</span>
-    <span>산업 현장 사고 뉴스 이미지 삽입</span>
-    <span class="img-note">가스 폭발 / 화재 / 작업자 사고 관련 사진</span>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 3 — MOTIVATION -->
+<!-- ══ 03 MOTIVATION ═════════════════════════════════════════════ -->
 <section class="slide" id="s3">
-  <div class="top-bar">
-    <span class="section-label">프로젝트 동기</span>
-    <span class="badge badge-ora">Motivation</span>
-  </div>
-  <div class="h2" style="margin-bottom:28px;">기존 시스템으로는 부족하다</div>
-  <div class="grid-2">
-    <div>
-      <div class="h3" style="color:var(--red);margin-bottom:14px;">❌ 기존 방식의 한계</div>
+  <div class="sl-hd"><span class="sl-label">프로젝트 동기</span><span class="badge bo">Motivation</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">기존 시스템으로는 부족하다</div>
+    <div class="g2" style="flex:1;">
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="step"><span style="font-size:18px;">📹</span><div><b>CCTV만으로는</b><br/><span class="body">사람이 직접 24시간 모니터링 → 불가능</span></div></div>
-        <div class="step"><span style="font-size:18px;">🚨</span><div><b>단순 센서 경보</b><br/><span class="body">오경보 빈번, 맥락 파악 불가</span></div></div>
-        <div class="step"><span style="font-size:18px;">💸</span><div><b>산업용 솔루션</b><br/><span class="body">수천만 원 비용 → 중소 사업장 도입 불가</span></div></div>
-        <div class="step"><span style="font-size:18px;">📱</span><div><b>원격 대응 없음</b><br/><span class="body">현장 이탈 시 아무것도 할 수 없음</span></div></div>
+        <div class="h3" style="color:var(--red);margin-bottom:4px;">기존 방식의 한계</div>
+        <div class="step"><div class="snum" style="background:var(--red-l);color:var(--red);">1</div><div><b>CCTV만으로는</b><br/><span class="body">사람이 24시간 직접 모니터링 — 현실적으로 불가능</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--red-l);color:var(--red);">2</div><div><b>단순 센서 경보</b><br/><span class="body">오경보 빈번, 맥락 파악 불가, 센서 단독 동작</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--red-l);color:var(--red);">3</div><div><b>고가 산업용 솔루션</b><br/><span class="body">수천만 원 비용 — 중소 사업장 도입 불가</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--red-l);color:var(--red);">4</div><div><b>원격 대응 불가</b><br/><span class="body">현장 이탈 시 즉각 대응 수단 없음</span></div></div>
       </div>
-    </div>
-    <div>
-      <div class="h3" style="color:var(--grn);margin-bottom:14px;">✅ 우리가 만든 것</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="step"><span style="font-size:18px;">🤖</span><div><b>AI 자동 분석</b><br/><span class="body">카메라 영상을 AI가 24시간 자동 판단</span></div></div>
-        <div class="step"><span style="font-size:18px;">🔗</span><div><b>멀티 센서 융합</b><br/><span class="body">5종 센서 + 카메라 + AI → 정확한 위험 판단</span></div></div>
-        <div class="step"><span style="font-size:18px;">💰</span><div><b>저비용 엣지 컴퓨팅</b><br/><span class="body">10만 원 이하 하드웨어로 엔터프라이즈급 기능</span></div></div>
-        <div class="step"><span style="font-size:18px;">📲</span><div><b>텔레그램 원격 제어</b><br/><span class="body">어디서든 실시간 확인 및 제어</span></div></div>
+        <div class="h3" style="color:var(--grn);margin-bottom:4px;">Smart Safety Guard</div>
+        <div class="step"><div class="snum" style="background:var(--grn-l);color:var(--grn);">1</div><div><b>AI 자동 분석</b><br/><span class="body">카메라 영상을 AI가 24시간 자동으로 판단</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--grn-l);color:var(--grn);">2</div><div><b>멀티 센서 융합</b><br/><span class="body">5종 센서 + 카메라 + AI → 정확한 위험 판단</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--grn-l);color:var(--grn);">3</div><div><b>저비용 엣지 컴퓨팅</b><br/><span class="body">10만 원 이하 하드웨어로 엔터프라이즈급 기능</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--grn-l);color:var(--grn);">4</div><div><b>텔레그램 원격 제어</b><br/><span class="body">어디서든 실시간 확인 및 원격 제어</span></div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 4 — OVERVIEW -->
+<!-- ══ 04 OVERVIEW ═══════════════════════════════════════════════ -->
 <section class="slide" id="s4">
-  <div class="top-bar">
-    <span class="section-label">시스템 개요</span>
-    <span class="badge badge-blu">System Overview</span>
-  </div>
-  <div class="h2" style="text-align:center;margin-bottom:32px;">하나의 시스템, 세 가지 핵심 기능</div>
-  <div class="grid-3" style="margin-bottom:20px;">
-    <div class="card card-top-grn" style="text-align:center;">
-      <div style="font-size:44px;margin-bottom:10px;">📡</div>
-      <div class="h3" style="color:var(--grn);">감지 (Sense)</div>
-      <div class="body" style="margin-top:8px;">5종 센서 + USB 카메라<br/>실시간 환경 데이터 수집</div>
-      <div style="margin-top:12px;display:flex;flex-direction:column;gap:5px;">
-        <span class="tag tag-grn">가스 · 온도 · 거리</span>
-        <span class="tag tag-grn">움직임 · 사람 탐지</span>
+  <div class="sl-hd"><span class="sl-label">시스템 개요</span><span class="badge bb">System Overview</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:20px;">
+    <div class="h2">하나의 시스템, 세 가지 핵심 기능</div>
+    <div class="g3" style="flex:1;">
+      <div class="card tg-top" style="display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:40px;margin-bottom:14px;">📡</div>
+          <div class="h3" style="color:var(--grn);margin-bottom:10px;">감지 (Sense)</div>
+          <div class="body">5종 센서와 USB 카메라로 산업 현장의 물리적 위험 요소를 실시간으로 수집합니다</div>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;">
+          <span class="tag tg">가스 · 온도 · 거리</span>
+          <span class="tag tg">움직임 · 사람 탐지</span>
+        </div>
+      </div>
+      <div class="card tb-top" style="display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:40px;margin-bottom:14px;">🧠</div>
+          <div class="h3" style="color:var(--blu);margin-bottom:10px;">분석 (Analyze)</div>
+          <div class="body">YOLOv5 엣지 AI와 Groq Vision이 맥락을 이해하는 지능형 안전 판단을 수행합니다</div>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;">
+          <span class="tag tb">실시간 사람 탐지</span>
+          <span class="tag tb">AI 장면 분석</span>
+        </div>
+      </div>
+      <div class="card tr-top" style="display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="font-size:40px;margin-bottom:14px;">🚨</div>
+          <div class="h3" style="color:var(--red);margin-bottom:10px;">대응 (Alert)</div>
+          <div class="body">다층 경보 시스템으로 LED, 버저, 팬을 자동 제어하고 텔레그램으로 즉시 알립니다</div>
+        </div>
+        <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;">
+          <span class="tag tr">LED · 버저 · 냉각팬</span>
+          <span class="tag to">텔레그램 실시간 알림</span>
+        </div>
       </div>
     </div>
-    <div class="card card-top-blu" style="text-align:center;">
-      <div style="font-size:44px;margin-bottom:10px;">🧠</div>
-      <div class="h3" style="color:var(--blu);">분석 (Analyze)</div>
-      <div class="body" style="margin-top:8px;">YOLOv5 엣지 AI + Groq Vision<br/>맥락을 이해하는 지능형 판단</div>
-      <div style="margin-top:12px;display:flex;flex-direction:column;gap:5px;">
-        <span class="tag tag-blu">실시간 사람 탐지</span>
-        <span class="tag tag-blu">AI 장면 분석</span>
-      </div>
+    <div class="imgbox" style="height:80px;">
+      <div style="font-size:13px;font-weight:600;">전체 시스템 사진 삽입 (센서 + Pi + Jetson Nano + 모니터)</div>
     </div>
-    <div class="card card-top-red" style="text-align:center;">
-      <div style="font-size:44px;margin-bottom:10px;">🚨</div>
-      <div class="h3" style="color:var(--red);">대응 (Alert)</div>
-      <div class="body" style="margin-top:8px;">다층 경보 시스템<br/>자동 액추에이터 + 텔레그램</div>
-      <div style="margin-top:12px;display:flex;flex-direction:column;gap:5px;">
-        <span class="tag tag-red">LED · 버저 · 팬</span>
-        <span class="tag tag-ora">텔레그램 실시간 알림</span>
-      </div>
-    </div>
-  </div>
-  <div class="img-box" style="width:100%;height:100px;">
-    <span style="font-size:24px;">🖼️</span>
-    <span>전체 시스템 사진 (센서 + Pi + Jetson Nano + 모니터)</span>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 5 — ARCHITECTURE -->
+<!-- ══ 05 ARCHITECTURE ════════════════════════════════════════════ -->
 <section class="slide" id="s5">
-  <div class="top-bar">
-    <span class="section-label">시스템 아키텍처</span>
-    <span class="badge badge-blu">Architecture</span>
-  </div>
-  <div class="h2" style="margin-bottom:22px;">두 노드 엣지 컴퓨팅 구조</div>
-  <div style="width:100%;display:flex;gap:14px;align-items:stretch;">
-    <div class="card card-top-grn" style="flex:1;">
-      <div class="section-label" style="color:var(--grn);">센서 레이어</div>
-      <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:13px;color:var(--sub);">
-        <div>💨 MQ-2 가스 센서</div>
-        <div>🌡️ DHT22 온습도</div>
-        <div>📏 HC-SR04 초음파</div>
-        <div>🔦 PIR 동작 감지</div>
-        <div>📷 USB 웹캠</div>
+  <div class="sl-hd"><span class="sl-label">시스템 아키텍처</span><span class="badge bb">Architecture</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:18px;">
+    <div class="h2">두 노드 엣지 컴퓨팅 시스템 구조</div>
+
+    <!-- Main architecture diagram -->
+    <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Top row: main flow -->
+      <div style="display:flex;align-items:stretch;gap:12px;flex:1;">
+
+        <!-- Sensors block -->
+        <div style="display:flex;flex-direction:column;gap:8px;min-width:150px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);text-align:center;margin-bottom:2px;">센서 레이어</div>
+          <div class="arch-box tg-top" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+            <div class="title" style="color:var(--grn);">Sensors</div>
+            <div class="items">
+              MQ-2 가스/연기<br/>
+              DHT22 온습도<br/>
+              HC-SR04 초음파<br/>
+              PIR 동작감지
+            </div>
+          </div>
+          <div class="arch-box tg-top" style="background:var(--grn-l);">
+            <div class="title" style="color:var(--grn);font-size:11px;">Actuators</div>
+            <div class="items" style="font-size:10px;">LED · 버저 · 팬</div>
+          </div>
+        </div>
+
+        <!-- Arrow 1 -->
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--mu);font-size:11px;flex-shrink:0;">
+          <svg width="40" height="16" viewBox="0 0 40 16"><line x1="0" y1="8" x2="32" y2="8" stroke="#93c5fd" stroke-width="2"/><polygon points="32,4 40,8 32,12" fill="#93c5fd"/></svg>
+          <span style="font-size:10px;color:var(--mu);">GPIO</span>
+        </div>
+
+        <!-- Raspberry Pi central box -->
+        <div style="flex:2;display:flex;flex-direction:column;gap:0;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);text-align:center;margin-bottom:6px;">중앙 허브 (Central Hub)</div>
+          <div class="arch-box to-top" style="flex:1;border-width:2px;">
+            <div class="title" style="color:var(--ora);font-size:15px;margin-bottom:12px;">Raspberry Pi 3</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="csm" style="font-size:11px;padding:8px 10px;"><span style="color:var(--blu);font-weight:700;">Flask API</span><br/><span style="color:var(--mu);">:5000 REST</span></div>
+              <div class="csm" style="font-size:11px;padding:8px 10px;"><span style="color:var(--grn);font-weight:700;">SQLite DB</span><br/><span style="color:var(--mu);">4 tables</span></div>
+              <div class="csm" style="font-size:11px;padding:8px 10px;"><span style="color:var(--red);font-weight:700;">Alert Engine</span><br/><span style="color:var(--mu);">임계값 평가</span></div>
+              <div class="csm" style="font-size:11px;padding:8px 10px;"><span style="color:var(--pur);font-weight:700;">Groq Vision</span><br/><span style="color:var(--mu);">AI 분석</span></div>
+              <div class="csm" style="font-size:11px;padding:8px 10px;grid-column:1/-1;"><span style="color:var(--blu);font-weight:700;">SSE Stream</span><span style="color:var(--mu);"> — 2초마다 브라우저에 실시간 푸시</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arrow 2 -->
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;flex-shrink:0;">
+          <svg width="40" height="16" viewBox="0 0 40 16"><line x1="0" y1="8" x2="32" y2="8" stroke="#93c5fd" stroke-width="2"/><polygon points="32,4 40,8 32,12" fill="#93c5fd"/></svg>
+          <span style="font-size:10px;color:var(--mu);">HTTP/SSE</span>
+        </div>
+
+        <!-- Client block -->
+        <div style="display:flex;flex-direction:column;gap:8px;min-width:155px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);text-align:center;margin-bottom:2px;">클라이언트</div>
+          <div class="arch-box tb-top" style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+            <div class="title" style="color:var(--blu);">Web Dashboard</div>
+            <div class="items">실시간 3열 레이아웃<br/>차트 · 센서 · 카메라<br/>수동 제어 버튼</div>
+          </div>
+          <div class="arch-box tg-top" style="background:var(--grn-l);">
+            <div class="title" style="color:var(--grn);font-size:11px;">Telegram Bot</div>
+            <div class="items" style="font-size:10px;">원격 알림 + 명령 제어</div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="flow-arrow" style="align-self:center;">→</div>
-    <div class="card card-top-blu" style="flex:1.2;">
-      <div class="section-label" style="color:var(--blu);">Jetson Nano</div>
-      <div style="font-size:12px;margin-top:10px;color:var(--sub);line-height:1.8;">
-        🤖 YOLOv5n 실행<br/>
-        👁️ 사람 탐지 + 위험구역<br/>
-        🖼️ 프레임 10FPS → Pi<br/>
-        <span style="color:var(--blu);font-family:monospace;font-size:11px;">POST /api/frame<br/>POST /api/detection</span>
+
+      <!-- Bottom row: Jetson Nano -->
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="min-width:150px;"></div>
+        <div style="flex-shrink:0;display:flex;align-items:center;gap:4px;color:var(--mu);font-size:10px;">
+          <svg width="16" height="40" viewBox="0 0 16 40"><line x1="8" y1="0" x2="8" y2="32" stroke="#86efac" stroke-width="2"/><polygon points="4,32 8,40 12,32" fill="#86efac"/></svg>
+          POST /api/frame
+        </div>
+        <div class="arch-box tg-top" style="flex:2;border-width:2px;">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div style="flex:1;">
+              <div class="title" style="color:var(--grn);font-size:14px;margin-bottom:6px;">Jetson Nano 4GB — AI Vision Node</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <div class="csm" style="font-size:11px;padding:7px 10px;"><span style="color:var(--blu);font-weight:700;">YOLOv5n</span><span style="color:var(--mu);"> — 사람 탐지 5FPS</span></div>
+                <div class="csm" style="font-size:11px;padding:7px 10px;"><span style="color:var(--pur);font-weight:700;">USB Webcam</span><span style="color:var(--mu);"> — 640×480 캡처</span></div>
+                <div class="csm" style="font-size:11px;padding:7px 10px;"><span style="color:var(--grn);font-weight:700;">Frame Sender</span><span style="color:var(--mu);"> — JPEG 10FPS → Pi</span></div>
+                <div class="csm" style="font-size:11px;padding:7px 10px;"><span style="color:var(--red);font-weight:700;">Danger Zone</span><span style="color:var(--mu);"> — 픽셀 영역 침입 감지</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="flex-shrink:0;width:40px;"></div>
+        <div style="min-width:155px;"></div>
       </div>
-    </div>
-    <div class="flow-arrow" style="align-self:center;">→</div>
-    <div class="card" style="flex:1.8;border-top:3px solid var(--ora);">
-      <div class="section-label" style="color:var(--ora);">Raspberry Pi 3 — 중앙 허브</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;font-size:12px;color:var(--sub);">
-        <div>🐍 Flask API :5000</div>
-        <div>🗄️ SQLite DB</div>
-        <div>⚡ SSE 실시간</div>
-        <div>🤖 Groq Vision AI</div>
-        <div>📲 텔레그램 봇</div>
-        <div>⏱️ 2초 센서 폴링</div>
-      </div>
-    </div>
-    <div class="flow-arrow" style="align-self:center;">→</div>
-    <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
-      <div class="card-sm card-top-blu"><div style="font-size:11px;color:var(--blu);font-weight:700;">🌐 웹 대시보드</div><div style="font-size:11px;color:var(--mu);">실시간 3열 레이아웃</div></div>
-      <div class="card-sm card-top-grn"><div style="font-size:11px;color:var(--grn);font-weight:700;">📱 텔레그램 봇</div><div style="font-size:11px;color:var(--mu);">원격 알림 + 제어</div></div>
-      <div class="card-sm card-top-red"><div style="font-size:11px;color:var(--red);font-weight:700;">🚨 액추에이터</div><div style="font-size:11px;color:var(--mu);">LED · 버저 · 팬</div></div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 6 — HARDWARE -->
+<!-- ══ 06 HARDWARE ═══════════════════════════════════════════════ -->
 <section class="slide" id="s6">
-  <div class="top-bar">
-    <span class="section-label">하드웨어 구성</span>
-    <span class="badge badge-grn">Hardware Stack</span>
-  </div>
-  <div class="h2" style="margin-bottom:22px;">센서 선택의 이유</div>
-  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:11px;width:100%;margin-bottom:18px;">
-    <div class="card card-top-red" style="text-align:center;padding:16px 10px;">
-      <div style="font-size:28px;margin-bottom:7px;">💨</div>
-      <div style="font-size:13px;font-weight:700;">MQ-2</div>
-      <span class="tag tag-red" style="margin-top:6px;">가스/연기</span>
-      <div style="font-size:11px;color:var(--mu);margin-top:8px;">화재·가스 초기 감지. 디지털 출력</div>
+  <div class="sl-hd"><span class="sl-label">하드웨어 구성</span><span class="badge bg">Hardware Stack</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">센서 선택의 이유</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:11px;flex:1;">
+      <div class="card tr-top" style="display:flex;flex-direction:column;justify-content:space-between;padding:18px 14px;">
+        <div>
+          <span class="tag tr" style="margin-bottom:10px;display:block;">MQ-2</span>
+          <div class="h3" style="font-size:16px;">가스 / 연기</div>
+          <div class="body" style="margin-top:8px;font-size:12px;">화재·가스 누출 초기 감지. 디지털 출력으로 GPIO 연결 간단</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--mu);">GPIO 25 · Active-LOW</div>
+      </div>
+      <div class="card to-top" style="display:flex;flex-direction:column;justify-content:space-between;padding:18px 14px;">
+        <div>
+          <span class="tag to" style="margin-bottom:10px;display:block;">DHT22</span>
+          <div class="h3" style="font-size:16px;">온도 / 습도</div>
+          <div class="body" style="margin-top:8px;font-size:12px;">과열 감지 및 작업 환경 쾌적도 측정. 높은 정밀도</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--mu);">GPIO 27 · 1-Wire</div>
+      </div>
+      <div class="card tb-top" style="display:flex;flex-direction:column;justify-content:space-between;padding:18px 14px;">
+        <div>
+          <span class="tag tb" style="margin-bottom:10px;display:block;">HC-SR04</span>
+          <div class="h3" style="font-size:16px;">초음파 거리</div>
+          <div class="body" style="margin-top:8px;font-size:12px;">위험구역 침입 감지. 50cm 이하 접근 시 즉시 경보 발생</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--mu);">TRIG 18 / ECHO 21</div>
+      </div>
+      <div class="card tp-top" style="display:flex;flex-direction:column;justify-content:space-between;padding:18px 14px;">
+        <div>
+          <span class="tag tp" style="margin-bottom:10px;display:block;">PIR</span>
+          <div class="h3" style="font-size:16px;">동작 감지</div>
+          <div class="body" style="margin-top:8px;font-size:12px;">저전력·저비용으로 사람 움직임을 빠르게 감지</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--mu);">GPIO 4 · PIR Sensor</div>
+      </div>
+      <div class="card tg-top" style="display:flex;flex-direction:column;justify-content:space-between;padding:18px 14px;">
+        <div>
+          <span class="tag tg" style="margin-bottom:10px;display:block;">USB Webcam</span>
+          <div class="h3" style="font-size:16px;">카메라 비전</div>
+          <div class="body" style="margin-top:8px;font-size:12px;">Jetson Nano와 연결. YOLOv5 추론 및 Pi로 JPEG 전송</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--mu);">640×480 · 10FPS</div>
+      </div>
     </div>
-    <div class="card card-top-ora" style="text-align:center;padding:16px 10px;">
-      <div style="font-size:28px;margin-bottom:7px;">🌡️</div>
-      <div style="font-size:13px;font-weight:700;">DHT22</div>
-      <span class="tag tag-ora" style="margin-top:6px;">온도·습도</span>
-      <div style="font-size:11px;color:var(--mu);margin-top:8px;">과열 감지 및 환경 쾌적도 측정</div>
-    </div>
-    <div class="card card-top-blu" style="text-align:center;padding:16px 10px;">
-      <div style="font-size:28px;margin-bottom:7px;">📏</div>
-      <div style="font-size:13px;font-weight:700;">HC-SR04</div>
-      <span class="tag tag-blu" style="margin-top:6px;">초음파 거리</span>
-      <div style="font-size:11px;color:var(--mu);margin-top:8px;">위험구역 침입 감지. 50cm 경보</div>
-    </div>
-    <div class="card card-top-pur" style="text-align:center;padding:16px 10px;">
-      <div style="font-size:28px;margin-bottom:7px;">🔦</div>
-      <div style="font-size:13px;font-weight:700;">PIR</div>
-      <span class="tag tag-pur" style="margin-top:6px;">동작 감지</span>
-      <div style="font-size:11px;color:var(--mu);margin-top:8px;">저전력으로 빠른 움직임 감지</div>
-    </div>
-    <div class="card card-top-grn" style="text-align:center;padding:16px 10px;">
-      <div style="font-size:28px;margin-bottom:7px;">📷</div>
-      <div style="font-size:13px;font-weight:700;">USB Webcam</div>
-      <span class="tag tag-grn" style="margin-top:6px;">비전</span>
-      <div style="font-size:11px;color:var(--mu);margin-top:8px;">640×480 영상 → AI 분석</div>
-    </div>
-  </div>
-  <div class="card" style="width:100%;">
-    <div class="section-label" style="margin-bottom:10px;">액추에이터 (Actuators) — 자동 대응</div>
-    <div style="display:flex;gap:28px;">
-      <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">💡</span><div><b style="font-size:13px;">LED 경고등</b><br/><span style="font-size:11px;color:var(--mu);">경보 시 빨간 ON, 정상 시 초록</span></div></div>
-      <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">🔔</span><div><b style="font-size:13px;">버저 (Buzzer)</b><br/><span style="font-size:11px;color:var(--mu);">새 경보 발생 시 3초 경보음</span></div></div>
-      <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px;">🌀</span><div><b style="font-size:13px;">냉각 팬</b><br/><span style="font-size:11px;color:var(--mu);">가스/과열 감지 시 자동 환기</span></div></div>
+    <div class="card" style="padding:14px 18px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-bottom:10px;">액추에이터 (Actuators)</div>
+      <div style="display:flex;gap:28px;font-size:13px;">
+        <div><span style="font-weight:700;">LED 경고등</span> <span class="tag tr" style="font-size:10px;">GPIO 12/13</span> <span style="color:var(--sub);">경보 시 빨간 ON · 정상 시 초록 ON</span></div>
+        <div><span style="font-weight:700;">버저</span> <span class="tag to" style="font-size:10px;">GPIO 20</span> <span style="color:var(--sub);">새 경보 발생 시 3초 자동 경보음</span></div>
+        <div><span style="font-weight:700;">냉각 팬</span> <span class="tag tb" style="font-size:10px;">GPIO opt.</span> <span style="color:var(--sub);">가스/과열 감지 시 자동 환기 작동</span></div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 7 — AI STACK -->
+<!-- ══ 07 AI STACK ═══════════════════════════════════════════════ -->
 <section class="slide" id="s7">
-  <div class="top-bar">
-    <span class="section-label">AI 기술 스택</span>
-    <span class="badge badge-pur">AI Stack</span>
-  </div>
-  <div class="h2" style="margin-bottom:24px;">두 단계의 AI — 엣지 + 클라우드</div>
-  <div class="grid-2">
-    <div class="card card-top-blu">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-        <span style="font-size:28px;">🦾</span>
+  <div class="sl-hd"><span class="sl-label">AI 기술 스택</span><span class="badge bp">AI Stack</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">두 단계의 AI — 엣지 + 클라우드</div>
+    <div class="g2" style="flex:1;">
+      <div class="card tb-top" style="display:flex;flex-direction:column;gap:12px;">
         <div>
+          <div class="badge bb" style="margin-bottom:10px;">Edge AI — 엣지 AI</div>
           <div class="h3">YOLOv5n on Jetson Nano</div>
-          <span class="badge badge-blu" style="font-size:10px;margin-top:4px;">엣지 AI (Edge AI)</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px;flex:1;">
+          <div class="csm"><div style="font-size:12px;font-weight:700;color:var(--blu);margin-bottom:3px;">역할</div><div style="font-size:13px;color:var(--sub);">사람을 실시간으로 탐지 (5 FPS 추론)</div></div>
+          <div class="csm"><div style="font-size:12px;font-weight:700;color:var(--blu);margin-bottom:3px;">위험구역 판단</div><div style="font-size:13px;color:var(--sub);">바운딩박스 중심점이 사전 설정 영역 내 진입 여부 확인</div></div>
+          <div class="csm"><div style="font-size:12px;font-weight:700;color:var(--blu);margin-bottom:3px;">왜 Jetson Nano?</div><div style="font-size:13px;color:var(--sub);">Maxwell GPU 내장 — CPU 대비 10배 빠른 추론 속도</div></div>
+          <div class="csm"><div style="font-size:12px;font-weight:700;color:var(--blu);margin-bottom:3px;">왜 YOLOv5n?</div><div style="font-size:13px;color:var(--sub);">초소형 모델로 Nano에서 저지연(low-latency) 실시간 처리 가능</div></div>
         </div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="card-sm" style="font-size:13px;"><b>역할:</b> 사람 실시간 탐지 (5 FPS)</div>
-        <div class="card-sm" style="font-size:13px;"><b>위험구역:</b> 미리 설정한 픽셀 영역 침입 감지</div>
-        <div class="card-sm" style="font-size:13px;"><b>왜 Jetson?</b> GPU 내장 → CPU보다 10× 빠른 추론</div>
-        <div class="card-sm" style="font-size:13px;"><b>왜 YOLOv5n?</b> 소형 모델 → 저지연 실시간 처리</div>
-      </div>
-    </div>
-    <div class="card card-top-pur">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-        <span style="font-size:28px;">🔮</span>
+      <div class="card tp-top" style="display:flex;flex-direction:column;gap:12px;">
         <div>
-          <div class="h3">Groq Vision API</div>
-          <span class="badge badge-pur" style="font-size:10px;margin-top:4px;">Llama 4 Scout 17B</span>
+          <div class="badge bp" style="margin-bottom:10px;">Cloud AI — 클라우드 AI</div>
+          <div class="h3">Groq Vision API (Llama 4 Scout)</div>
         </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="card-sm" style="font-size:13px;"><b>역할:</b> 카메라 영상 → 안전 상황 판단</div>
-        <div class="card-sm" style="font-size:13px;"><b>판단:</b> 화재·연기·PPE·위험요소·사람 위치</div>
-        <div class="card-sm" style="font-size:13px;"><b>왜 Groq?</b> 업계 최고속 LLM 추론 (Ultra-low latency)</div>
-        <div class="card-sm" style="font-size:13px;"><b>왜 Vision?</b> 센서만으론 모르는 맥락을 영상으로 보완</div>
+        <div style="display:flex;flex-direction:column;gap:9px;flex:1;">
+          <div class="csm"><div style="font-size:12px;font-weight:700;color:var(--pur);margin-bottom:3px;">역할</div><div style="font-size:13px;color:var(--sub);">카메라 영상을 보고 안전 상황 전체를 판단</div></div>
+          <div class="csm"><div style="font-size:12px;font-weight:700;color:var(--pur);margin-bottom:3px;">판단 항목</div><div style="font-size:13px;color:var(--sub);">화재·연기·PPE·위험요소·사람 위치 5가지 체크</div></div>
+          <div class="csm"><div style="font-size:12px;font-weight:700;color:var(--pur);margin-bottom:3px;">왜 Groq?</div><div style="font-size:13px;color:var(--sub);">업계 최고속 LLM 추론 — 초저지연(ultra-low latency) API</div></div>
+          <div class="csm"><div style="font-size:12px;font-weight:700;color:var(--pur);margin-bottom:3px;">왜 Vision 모델?</div><div style="font-size:13px;color:var(--sub);">센서만으로 알 수 없는 시각적 맥락을 영상으로 보완</div></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 8 — AI RESULT -->
+<!-- ══ 08 AI RESULT ══════════════════════════════════════════════ -->
 <section class="slide" id="s8">
-  <div class="top-bar">
-    <span class="section-label">AI 분석 결과</span>
-    <span class="badge badge-pur">Groq Vision Output</span>
-  </div>
-  <div class="h2" style="margin-bottom:20px;">AI가 카메라를 보고 이렇게 분석합니다</div>
-  <div class="grid-2">
-    <div>
-      <div class="section-label" style="margin-bottom:8px;">AI 입력 (Input)</div>
-      <div class="code">
-        <span class="c">// 카메라 프레임 + 센서 컨텍스트</span><br/>
-        <span class="k">sensor_context</span>: {<br/>
-        &nbsp;&nbsp;<span class="n">gas</span>: <span class="s">"TRIGGERED"</span>,<br/>
-        &nbsp;&nbsp;<span class="n">temp</span>: <span class="s">38.5°C</span>,<br/>
-        &nbsp;&nbsp;<span class="n">distance</span>: <span class="s">35 cm</span>,<br/>
-        &nbsp;&nbsp;<span class="n">trigger</span>: <span class="s">"GAS"</span><br/>
-        }<br/>
-        <span class="k">image</span>: <span class="s">JPEG frame from Nano</span>
-      </div>
-      <div style="margin-top:14px;">
-        <div class="section-label" style="margin-bottom:8px;">5가지 시각 안전 체크</div>
-        <div style="display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--sub);">
-          <div>🔥 화재 여부 (Fire visible?)</div>
-          <div>💨 연기 여부 (Smoke/haze?)</div>
-          <div>👷 작업자 수 및 위치</div>
-          <div>🦺 PPE 착용 여부</div>
-          <div>⚠️ 물리적 위험요소</div>
+  <div class="sl-hd"><span class="sl-label">AI 분석 결과</span><span class="badge bp">Groq Vision Output</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">AI가 카메라를 보고 이렇게 분석합니다</div>
+    <div style="flex:1;display:flex;gap:18px;">
+      <!-- Input -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);">AI 입력 (Input)</div>
+        <div class="card tb-top" style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:var(--blu);margin-bottom:12px;">카메라 프레임 + 센서 컨텍스트</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+            <div class="csm" style="display:flex;justify-content:space-between;"><span style="color:var(--sub);">가스 센서</span> <span class="tag tr">TRIGGERED</span></div>
+            <div class="csm" style="display:flex;justify-content:space-between;"><span style="color:var(--sub);">온도</span> <span style="font-weight:700;">38.5°C</span></div>
+            <div class="csm" style="display:flex;justify-content:space-between;"><span style="color:var(--sub);">거리</span> <span style="font-weight:700;">35 cm</span></div>
+            <div class="csm" style="display:flex;justify-content:space-between;"><span style="color:var(--sub);">트리거</span> <span class="tag to">GAS</span></div>
+          </div>
+          <div style="margin-top:14px;">
+            <div class="imgbox" style="height:80px;"><div style="font-size:13px;font-weight:600;">JPEG 프레임 첨부</div><div class="imgnote">Jetson Nano → Pi → Groq</div></div>
+          </div>
         </div>
       </div>
-    </div>
-    <div>
-      <div class="section-label" style="margin-bottom:8px;">AI 출력 (Output)</div>
-      <div class="card card-top-red" style="margin-bottom:12px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-          <span class="tag tag-red">HIGH</span>
-          <span style="font-size:13px;font-weight:700;">위협 수준 (Threat Level)</span>
+
+      <!-- Arrow -->
+      <div style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;flex-shrink:0;">
+        <div class="card tp-top" style="padding:12px 10px;text-align:center;min-width:90px;">
+          <div style="font-size:12px;font-weight:700;color:var(--pur);">Groq</div>
+          <div style="font-size:11px;color:var(--mu);">Vision API</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;">
-          <div><span style="color:var(--mu);">🔍 장면:</span> 공장 내부, 가스 호스 근처 작업자 1명</div>
-          <div><span style="color:var(--ora);">⚠️ 위험:</span> 가스 누출 가능. 안전모 미착용</div>
-          <div><span style="color:var(--grn);">✅ 조치:</span> 즉시 대피, 환기팬 가동</div>
-        </div>
+        <svg width="16" height="32" viewBox="0 0 16 32"><line x1="8" y1="0" x2="8" y2="24" stroke="#c4b5fd" stroke-width="2"/><polygon points="4,24 8,32 12,24" fill="#c4b5fd"/></svg>
       </div>
-      <div class="card-sm" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
-        <div>🔥 화재: <span style="color:var(--grn);font-weight:700;">없음</span></div>
-        <div>💨 연기: <span style="color:var(--yel);font-weight:700;">확인 필요</span></div>
-        <div>👤 사람: <span style="color:var(--ora);font-weight:700;">1명</span></div>
-        <div>🦺 PPE: <span style="color:var(--red);font-weight:700;">미착용</span></div>
+
+      <!-- Output -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);">AI 출력 (Output)</div>
+        <div class="card tr-top" style="flex:1;display:flex;flex-direction:column;gap:9px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span class="tag tr" style="font-size:12px;padding:4px 12px;">HIGH</span>
+            <span style="font-size:14px;font-weight:700;">위협 수준 (Threat Level)</span>
+          </div>
+          <div class="csm" style="border-left:3px solid var(--sub);"><div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:2px;">장면 (Scene)</div><div style="font-size:13px;color:var(--sub);">공장 내부, 가스 호스 근처 작업자 1명 발견</div></div>
+          <div class="csm" style="border-left:3px solid var(--red);"><div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:2px;">위험 (Risk)</div><div style="font-size:13px;color:var(--sub);">가스 누출 가능. 작업자 안전모 미착용</div></div>
+          <div class="csm" style="border-left:3px solid var(--grn);"><div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:2px;">조치 (Action)</div><div style="font-size:13px;color:var(--sub);">즉시 대피, 환기팬 가동, 관리자 연락</div></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:2px;font-size:12px;">
+            <div class="csm" style="padding:7px 10px;">화재 <span style="color:var(--grn);font-weight:700;float:right;">없음</span></div>
+            <div class="csm" style="padding:7px 10px;">연기 <span style="color:var(--yel);font-weight:700;float:right;">확인 필요</span></div>
+            <div class="csm" style="padding:7px 10px;">사람 <span style="color:var(--ora);font-weight:700;float:right;">1명</span></div>
+            <div class="csm" style="padding:7px 10px;">PPE <span style="color:var(--red);font-weight:700;float:right;">미착용</span></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 9 — DATA FLOW -->
+<!-- ══ 09 DATA FLOW ══════════════════════════════════════════════ -->
 <section class="slide" id="s9">
-  <div class="top-bar">
-    <span class="section-label">데이터 흐름</span>
-    <span class="badge badge-grn">Data Flow</span>
-  </div>
-  <div class="h2" style="margin-bottom:24px;">실시간 데이터 파이프라인</div>
-  <div style="width:100%;display:flex;flex-direction:column;gap:12px;">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <div class="card-sm card-top-grn" style="flex:1;"><div style="font-size:11px;color:var(--grn);font-weight:700;margin-bottom:3px;">① 센서 폴링 (2초)</div><div style="font-size:12px;color:var(--sub);">MQ-2 · DHT22 · HC-SR04 → read_all()</div></div>
-      <span class="flow-arrow">→</span>
-      <div class="card-sm card-top-ora" style="flex:1;"><div style="font-size:11px;color:var(--ora);font-weight:700;margin-bottom:3px;">② 경보 판단</div><div style="font-size:12px;color:var(--sub);">alerts.evaluate() → 임계값 비교</div></div>
-      <span class="flow-arrow">→</span>
-      <div class="card-sm card-top-blu" style="flex:1;"><div style="font-size:11px;color:var(--blu);font-weight:700;margin-bottom:3px;">③ DB 저장</div><div style="font-size:12px;color:var(--sub);">SQLite → sensor_readings, safety_events</div></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <div class="card-sm card-top-pur" style="flex:1;"><div style="font-size:11px;color:var(--pur);font-weight:700;margin-bottom:3px;">④ AI 분석 (비동기)</div><div style="font-size:12px;color:var(--sub);">Groq Vision → 장면 판단 → DB 저장</div></div>
-      <span class="flow-arrow">→</span>
-      <div class="card-sm card-top-grn" style="flex:1;"><div style="font-size:11px;color:var(--grn);font-weight:700;margin-bottom:3px;">⑤ SSE 브로드캐스트</div><div style="font-size:12px;color:var(--sub);">push_sse_update() → 브라우저 실시간</div></div>
-      <span class="flow-arrow">→</span>
-      <div class="card-sm card-top-blu" style="flex:1;"><div style="font-size:11px;color:var(--blu);font-weight:700;margin-bottom:3px;">⑥ 텔레그램</div><div style="font-size:12px;color:var(--sub);">경보 + AI 결과 + 사진 즉시 전송</div></div>
-    </div>
-    <div class="card" style="width:100%;padding:14px 18px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:18px;">🎥</span>
-        <div style="font-size:13px;color:var(--sub);"><b style="color:var(--tx);">Jetson Nano 병렬 스트림</b> — YOLOv5 추론 (5FPS) + JPEG 전송 (10FPS) → <span style="color:var(--blu);font-family:monospace;font-size:12px;">POST /api/frame + /api/detection</span></div>
+  <div class="sl-hd"><span class="sl-label">데이터 흐름</span><span class="badge bg">Data Flow</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:18px;">
+    <div class="h2">실시간 데이터 파이프라인</div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="card tg-top" style="flex:1;padding:14px 16px;"><div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:4px;">① 센서 폴링 (2초)</div><div style="font-size:13px;color:var(--sub);">MQ-2 · DHT22 · HC-SR04 → sensors.read_all()</div></div>
+        <div class="arrow">→</div>
+        <div class="card to-top" style="flex:1;padding:14px 16px;"><div style="font-size:11px;font-weight:700;color:var(--ora);margin-bottom:4px;">② 경보 판단</div><div style="font-size:13px;color:var(--sub);">alerts.evaluate() → 임계값 비교 → 경보 발생</div></div>
+        <div class="arrow">→</div>
+        <div class="card tb-top" style="flex:1;padding:14px 16px;"><div style="font-size:11px;font-weight:700;color:var(--blu);margin-bottom:4px;">③ DB 저장</div><div style="font-size:13px;color:var(--sub);">SQLite → sensor_readings + safety_events</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div class="card tp-top" style="flex:1;padding:14px 16px;"><div style="font-size:11px;font-weight:700;color:var(--pur);margin-bottom:4px;">④ AI 분석 (비동기)</div><div style="font-size:13px;color:var(--sub);">Groq Vision API → 장면 판단 → DB 저장</div></div>
+        <div class="arrow">→</div>
+        <div class="card tg-top" style="flex:1;padding:14px 16px;"><div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:4px;">⑤ SSE 브로드캐스트</div><div style="font-size:13px;color:var(--sub);">push_sse_update() → 브라우저 실시간 업데이트</div></div>
+        <div class="arrow">→</div>
+        <div class="card tb-top" style="flex:1;padding:14px 16px;"><div style="font-size:11px;font-weight:700;color:var(--blu);margin-bottom:4px;">⑥ 텔레그램 전송</div><div style="font-size:13px;color:var(--sub);">경보 + AI 결과 + 카메라 사진 즉시 전송</div></div>
+      </div>
+      <div class="card tg-top" style="padding:14px 18px;">
+        <div style="font-size:12px;font-weight:700;color:var(--grn);margin-bottom:6px;">Jetson Nano 병렬 스트림</div>
+        <div style="display:flex;gap:18px;font-size:13px;color:var(--sub);">
+          <div><span style="color:var(--tx);font-weight:600;">YOLOv5 추론</span> → 5 FPS 사람 탐지 → POST /api/detection</div>
+          <div>|</div>
+          <div><span style="color:var(--tx);font-weight:600;">JPEG 전송</span> → 10 FPS 프레임 → POST /api/frame → AI 분석 대기</div>
+        </div>
+      </div>
+      <div class="card" style="padding:14px 18px;">
+        <div style="display:flex;gap:20px;font-size:13px;color:var(--sub);flex-wrap:wrap;">
+          <div><span class="tag tg">멀티스레딩</span> Flask + 센서루프 + AI분석 + 텔레그램봇 — 각각 독립 스레드로 분리</div>
+          <div><span class="tag tb">SSE 큐</span> maxsize=50 큐 → 브라우저 클라이언트에 실시간 이벤트 스트림</div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 10 — DASHBOARD -->
+<!-- ══ 10 DASHBOARD ══════════════════════════════════════════════ -->
 <section class="slide" id="s10">
-  <div class="top-bar">
-    <span class="section-label">웹 대시보드</span>
-    <span class="badge badge-grn">Live Dashboard</span>
-  </div>
-  <div class="h2" style="margin-bottom:18px;">모든 정보를 한 화면에 — 스크롤 없이</div>
-  <div class="img-box" style="width:100%;height:250px;margin-bottom:16px;">
-    <span style="font-size:38px;">🖼️</span>
-    <span style="font-size:15px;font-weight:700;">대시보드 스크린샷 삽입</span>
-    <span class="img-note">http://10.198.137.204:5000/ 캡처</span>
-  </div>
-  <div class="grid-3">
-    <div class="card-sm card-top-grn"><div class="tag tag-grn" style="margin-bottom:6px;">Left 열</div><div style="font-size:13px;margin-top:4px;color:var(--sub);">📷 카메라 라이브 피드<br/>🤖 AI 분석 결과</div></div>
-    <div class="card-sm card-top-blu"><div class="tag tag-blu" style="margin-bottom:6px;">Center 열</div><div style="font-size:13px;margin-top:4px;color:var(--sub);">📊 6개 센서 카드<br/>⚡ 액추에이터 상태<br/>🎮 수동 제어 버튼</div></div>
-    <div class="card-sm card-top-ora"><div class="tag tag-ora" style="margin-bottom:6px;">Right 열</div><div style="font-size:13px;margin-top:4px;color:var(--sub);">📈 실시간 차트<br/>📋 안전 이벤트 로그</div></div>
+  <div class="sl-hd"><span class="sl-label">웹 대시보드</span><span class="badge bg">Live Dashboard</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">모든 정보를 한 화면에 — 스크롤 없이</div>
+    <div class="imgbox" style="flex:1;">
+      <div style="font-size:15px;font-weight:700;">대시보드 스크린샷 삽입</div>
+      <div class="imgnote">http://10.198.137.204:5000/ 에서 캡처</div>
+    </div>
+    <div class="g3">
+      <div class="csm tg-top"><div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:6px;">Left 열</div><div style="font-size:13px;color:var(--sub);">카메라 라이브 피드<br/>AI 분석 결과 패널</div></div>
+      <div class="csm tb-top"><div style="font-size:11px;font-weight:700;color:var(--blu);margin-bottom:6px;">Center 열</div><div style="font-size:13px;color:var(--sub);">6개 센서 카드 (실시간 갱신)<br/>액추에이터 상태 · 수동 제어</div></div>
+      <div class="csm to-top"><div style="font-size:11px;font-weight:700;color:var(--ora);margin-bottom:6px;">Right 열</div><div style="font-size:13px;color:var(--sub);">온도·거리 히스토리 차트<br/>안전 이벤트 로그</div></div>
+    </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 11 — TELEGRAM -->
+<!-- ══ 11 TELEGRAM ══════════════════════════════════════════════ -->
 <section class="slide" id="s11">
-  <div class="top-bar">
-    <span class="section-label">텔레그램 봇</span>
-    <span class="badge badge-blu">Telegram Bot</span>
-  </div>
-  <div class="h2" style="margin-bottom:22px;">현장 밖에서도 완전한 원격 제어</div>
-  <div class="grid-2">
-    <div>
-      <div class="section-label" style="margin-bottom:10px;">자동 알림 (Auto Notification)</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="card-sm" style="border-left:3px solid var(--red);"><span style="color:var(--red);font-weight:700;">⚠️ 경보 발생 시</span><br/><span style="font-size:12px;color:var(--mu);">경보 종류 + 전체 센서값 즉시 전송</span></div>
-        <div class="card-sm" style="border-left:3px solid var(--pur);"><span style="color:var(--pur);font-weight:700;">🤖 AI 분석 완료 시</span><br/><span style="font-size:12px;color:var(--mu);">카메라 사진 + 분석 결과 함께 전송</span></div>
-        <div class="card-sm" style="border-left:3px solid var(--grn);"><span style="color:var(--grn);font-weight:700;">🟢 시스템 시작 시</span><br/><span style="font-size:12px;color:var(--mu);">"Smart Safety Guard Online" 자동 알림</span></div>
+  <div class="sl-hd"><span class="sl-label">텔레그램 봇</span><span class="badge bb">Telegram Bot</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">현장 밖에서도 완전한 원격 제어</div>
+    <div class="g2" style="flex:1;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);">자동 알림 (Auto Notification)</div>
+        <div class="card" style="border-left:4px solid var(--red);flex:1;display:flex;flex-direction:column;gap:8px;">
+          <div class="csm"><div style="font-weight:700;color:var(--red);margin-bottom:3px;">경보 발생 시</div><div style="font-size:13px;color:var(--sub);">경보 종류 + 전체 센서값 즉시 전송</div></div>
+          <div class="csm"><div style="font-weight:700;color:var(--pur);margin-bottom:3px;">AI 분석 완료 시</div><div style="font-size:13px;color:var(--sub);">카메라 사진 + 분석 결과 함께 전송</div></div>
+          <div class="csm"><div style="font-weight:700;color:var(--grn);margin-bottom:3px;">시스템 시작 시</div><div style="font-size:13px;color:var(--sub);">"Smart Safety Guard Online" 자동 알림</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);">원격 명령어 (Commands)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;align-content:start;">
+          <div class="csm" style="padding:10px 12px;"><div style="font-family:monospace;font-weight:700;color:var(--grn);font-size:14px;">/status</div><div style="font-size:12px;color:var(--mu);">현재 센서 현황</div></div>
+          <div class="csm" style="padding:10px 12px;"><div style="font-family:monospace;font-weight:700;color:var(--red);font-size:14px;">/alerts</div><div style="font-size:12px;color:var(--mu);">최근 5개 경보</div></div>
+          <div class="csm" style="padding:10px 12px;"><div style="font-family:monospace;font-weight:700;color:var(--blu);font-size:14px;">/photo</div><div style="font-size:12px;color:var(--mu);">카메라 현재 화면</div></div>
+          <div class="csm" style="padding:10px 12px;"><div style="font-family:monospace;font-weight:700;color:var(--pur);font-size:14px;">/analyze</div><div style="font-size:12px;color:var(--mu);">AI 분석 즉시 실행</div></div>
+          <div class="csm" style="padding:10px 12px;"><div style="font-family:monospace;font-weight:700;color:var(--ora);font-size:14px;">/silence</div><div style="font-size:12px;color:var(--mu);">버저 즉시 정지</div></div>
+          <div class="csm" style="padding:10px 12px;"><div style="font-family:monospace;font-weight:700;color:var(--grn);font-size:14px;">/led_on/off</div><div style="font-size:12px;color:var(--mu);">LED 원격 제어</div></div>
+        </div>
       </div>
     </div>
-    <div>
-      <div class="section-label" style="margin-bottom:10px;">원격 명령어 (Commands)</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;">
-        <div class="card-sm"><code style="color:var(--grn);font-weight:700;">/status</code><br/><span style="font-size:11px;color:var(--mu);">현재 센서 현황</span></div>
-        <div class="card-sm"><code style="color:var(--red);font-weight:700;">/alerts</code><br/><span style="font-size:11px;color:var(--mu);">최근 5개 경보</span></div>
-        <div class="card-sm"><code style="color:var(--blu);font-weight:700;">/photo</code><br/><span style="font-size:11px;color:var(--mu);">카메라 현재 화면</span></div>
-        <div class="card-sm"><code style="color:var(--pur);font-weight:700;">/analyze</code><br/><span style="font-size:11px;color:var(--mu);">AI 분석 즉시 실행</span></div>
-        <div class="card-sm"><code style="color:var(--ora);font-weight:700;">/silence</code><br/><span style="font-size:11px;color:var(--mu);">버저 즉시 정지</span></div>
-        <div class="card-sm"><code style="color:var(--grn);font-weight:700;">/led_on</code><br/><span style="font-size:11px;color:var(--mu);">LED 원격 제어</span></div>
-      </div>
+    <div class="imgbox" style="height:70px;">
+      <div style="font-size:13px;font-weight:600;">텔레그램 봇 채팅 스크린샷 — 경보 메시지 + AI 분석 사진 전송 화면</div>
     </div>
-  </div>
-  <div class="img-box" style="width:100%;height:80px;margin-top:14px;">
-    <span>📱 텔레그램 봇 채팅 스크린샷 — 경보 메시지 + AI 분석 사진 전송 화면</span>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 12 — ALERT SYSTEM -->
+<!-- ══ 12 ALERT SYSTEM ══════════════════════════════════════════ -->
 <section class="slide" id="s12">
-  <div class="top-bar">
-    <span class="section-label">경보 시스템</span>
-    <span class="badge badge-red">Multi-Layer Alert</span>
-  </div>
-  <div class="h2" style="margin-bottom:22px;">다층 경보 — 절대 놓치지 않는다</div>
-  <table class="comparison-table">
-    <thead>
-      <tr><th>위험 유형</th><th>감지 조건</th><th>LED</th><th>버저</th><th>팬</th><th>텔레그램</th><th>AI 분석</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><span class="tag tag-ora">💨 가스</span></td><td style="font-size:12px;">MQ-2 3회 연속 감지</td><td class="yes">🔴 ON</td><td class="yes">✅ 3초</td><td class="yes">✅ ON</td><td class="yes">✅ 즉시</td><td class="yes">✅</td></tr>
-      <tr class="highlight-row"><td><span class="tag tag-blu">📏 근접</span></td><td style="font-size:12px;">거리 &lt; 50cm</td><td class="yes">🔴 ON</td><td class="yes">✅ 3초</td><td class="no">—</td><td class="yes">✅ 즉시</td><td class="yes">✅</td></tr>
-      <tr><td><span class="tag tag-red">🌡️ 과열</span></td><td style="font-size:12px;">온도 &gt; 40°C</td><td class="yes">🔴 ON</td><td class="yes">✅ 3초</td><td class="yes">✅ ON</td><td class="yes">✅ 즉시</td><td class="yes">✅</td></tr>
-      <tr class="highlight-row"><td><span class="tag tag-pur">🚶 동작</span></td><td style="font-size:12px;">PIR 반응</td><td class="yes">🔴 ON</td><td class="yes">✅ 3초</td><td class="no">—</td><td class="yes">✅ 즉시</td><td class="yes">✅</td></tr>
-      <tr><td><span class="tag tag-red">👁️ 사람</span></td><td style="font-size:12px;">YOLO 위험구역 진입</td><td class="partial">⚡ SSE</td><td class="no">—</td><td class="no">—</td><td class="yes">✅ 즉시</td><td class="yes">✅</td></tr>
-    </tbody>
-  </table>
-  <div class="card" style="width:100%;margin-top:14px;border-left:4px solid var(--grn);">
-    <div style="display:flex;gap:24px;font-size:13px;color:var(--sub);">
-      <div><b style="color:var(--tx);">🛡️ 오경보 방지:</b> 히스테리시스 필터 — 가스 센서 3회 연속 확인 후 경보</div>
-      <div><b style="color:var(--tx);">⏱️ 버저:</b> 엣지 트리거 — 새 경보 시 1회만, 3초 후 자동 종료</div>
+  <div class="sl-hd"><span class="sl-label">경보 시스템</span><span class="badge br">Multi-Layer Alert</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">다층 경보 — 절대 놓치지 않는다</div>
+    <div style="flex:1;">
+      <table class="ctbl">
+        <thead><tr><th>위험 유형</th><th>감지 조건</th><th>LED</th><th>버저</th><th>팬</th><th>텔레그램</th><th>AI 분석</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag to">가스</span></td><td>MQ-2 3회 연속 감지</td><td class="yes">ON</td><td class="yes">3초</td><td class="yes">ON</td><td class="yes">즉시</td><td class="yes">실행</td></tr>
+          <tr class="hl"><td><span class="tag tb">근접</span></td><td>거리 &lt; 50 cm</td><td class="yes">ON</td><td class="yes">3초</td><td class="no">—</td><td class="yes">즉시</td><td class="yes">실행</td></tr>
+          <tr><td><span class="tag tr">과열</span></td><td>온도 &gt; 40°C</td><td class="yes">ON</td><td class="yes">3초</td><td class="yes">ON</td><td class="yes">즉시</td><td class="yes">실행</td></tr>
+          <tr class="hl"><td><span class="tag tp">동작</span></td><td>PIR 센서 반응</td><td class="yes">ON</td><td class="yes">3초</td><td class="no">—</td><td class="yes">즉시</td><td class="yes">실행</td></tr>
+          <tr><td><span class="tag tr">위험구역 사람</span></td><td>YOLO 침입 감지</td><td class="par">SSE</td><td class="no">—</td><td class="no">—</td><td class="yes">즉시</td><td class="yes">실행</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="g2">
+      <div class="card" style="padding:14px 18px;border-left:4px solid var(--grn);">
+        <div style="font-weight:700;margin-bottom:4px;">히스테리시스 필터 (Hysteresis)</div>
+        <div style="font-size:13px;color:var(--sub);">MQ-2 가스 센서: 3회 연속 True → 경보 발생. GPIO 플로팅 노이즈로 인한 오경보 완전 방지</div>
+      </div>
+      <div class="card" style="padding:14px 18px;border-left:4px solid var(--blu);">
+        <div style="font-weight:700;margin-bottom:4px;">엣지 트리거 버저 (Edge Trigger)</div>
+        <div style="font-size:13px;color:var(--sub);">새 경보 발생 시 1회만 울리고 3초 후 자동 종료. 연속 울림으로 인한 피로 방지</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 13 — DATABASE -->
+<!-- ══ 13 DATABASE ══════════════════════════════════════════════ -->
 <section class="slide" id="s13">
-  <div class="top-bar">
-    <span class="section-label">데이터베이스</span>
-    <span class="badge badge-blu">Database Design</span>
-  </div>
-  <div class="h2" style="margin-bottom:22px;">SQLite — 경량·고성능 로컬 DB</div>
-  <div class="grid-2">
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <div class="card-sm card-top-grn">
-        <div style="color:var(--grn);font-weight:700;font-size:13px;margin-bottom:6px;">📊 sensor_readings</div>
-        <div class="code" style="font-size:11px;">id · timestamp · pir · distance<br/>gas · temp · humidity</div>
-        <div style="font-size:11px;color:var(--mu);margin-top:4px;">2초마다 저장 → 하루 43,200건</div>
+  <div class="sl-hd"><span class="sl-label">데이터베이스</span><span class="badge bb">Database Design</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">SQLite — 경량·고성능 로컬 DB</div>
+    <div class="g2" style="flex:1;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="card tg-top" style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:var(--grn);margin-bottom:8px;">sensor_readings</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span class="tag tg" style="font-size:10px;">id</span><span class="tag tg" style="font-size:10px;">timestamp</span><span class="tag tg" style="font-size:10px;">pir</span><span class="tag tg" style="font-size:10px;">distance</span><span class="tag tg" style="font-size:10px;">gas</span><span class="tag tg" style="font-size:10px;">temp</span><span class="tag tg" style="font-size:10px;">humidity</span>
+          </div>
+          <div style="font-size:12px;color:var(--mu);">2초마다 저장 → 하루 약 43,200건</div>
+        </div>
+        <div class="card tr-top" style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:8px;">safety_events</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span class="tag tr" style="font-size:10px;">id</span><span class="tag tr" style="font-size:10px;">timestamp</span><span class="tag tr" style="font-size:10px;">event_type</span><span class="tag tr" style="font-size:10px;">details</span>
+          </div>
+          <div style="font-size:12px;color:var(--mu);">GAS · PROXIMITY · OVERHEAT · MOTION · PERSON</div>
+        </div>
       </div>
-      <div class="card-sm card-top-red">
-        <div style="color:var(--red);font-weight:700;font-size:13px;margin-bottom:6px;">🚨 safety_events</div>
-        <div class="code" style="font-size:11px;">id · timestamp · event_type · details</div>
-        <div style="font-size:11px;color:var(--mu);margin-top:4px;">GAS · PROXIMITY · OVERHEAT · MOTION</div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="card tb-top" style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:var(--blu);margin-bottom:8px;">vision_events</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span class="tag tb" style="font-size:10px;">id</span><span class="tag tb" style="font-size:10px;">timestamp</span><span class="tag tb" style="font-size:10px;">person_detected</span><span class="tag tb" style="font-size:10px;">in_danger_zone</span><span class="tag tb" style="font-size:10px;">confidence</span>
+          </div>
+          <div style="font-size:12px;color:var(--mu);">Jetson Nano YOLOv5 탐지 결과 저장</div>
+        </div>
+        <div class="card tp-top" style="flex:1;">
+          <div style="font-size:12px;font-weight:700;color:var(--pur);margin-bottom:8px;">ai_analyses</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+            <span class="tag tp" style="font-size:10px;">id</span><span class="tag tp" style="font-size:10px;">timestamp</span><span class="tag tp" style="font-size:10px;">trigger</span><span class="tag tp" style="font-size:10px;">threat_level</span><span class="tag tp" style="font-size:10px;">scene_desc</span><span class="tag tp" style="font-size:10px;">risk</span><span class="tag tp" style="font-size:10px;">action</span>
+          </div>
+          <div style="font-size:12px;color:var(--mu);">Groq Vision 분석 결과 영구 저장</div>
+        </div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <div class="card-sm card-top-blu">
-        <div style="color:var(--blu);font-weight:700;font-size:13px;margin-bottom:6px;">👁️ vision_events</div>
-        <div class="code" style="font-size:11px;">id · timestamp · person_detected<br/>in_danger_zone · confidence</div>
-        <div style="font-size:11px;color:var(--mu);margin-top:4px;">Jetson Nano YOLO 탐지 결과</div>
-      </div>
-      <div class="card-sm card-top-pur">
-        <div style="color:var(--pur);font-weight:700;font-size:13px;margin-bottom:6px;">🤖 ai_analyses</div>
-        <div class="code" style="font-size:11px;">id · timestamp · trigger · threat_level<br/>scene_desc · risk · action · summary</div>
-        <div style="font-size:11px;color:var(--mu);margin-top:4px;">Groq Vision 분석 결과 영구 저장</div>
+    <div class="card" style="padding:13px 18px;">
+      <div style="font-size:13px;color:var(--sub);">
+        <b style="color:var(--tx);">왜 SQLite?</b> — Raspberry Pi 환경에서 설치 불필요, 파일 기반, Python 내장 지원, 읽기 집중 워크로드 최적화. MySQL/PostgreSQL 대비 오버헤드 없음
       </div>
     </div>
-  </div>
-  <div class="card" style="width:100%;margin-top:14px;padding:14px 18px;">
-    <div style="font-size:13px;color:var(--sub);">💡 <b style="color:var(--tx);">왜 SQLite?</b> Raspberry Pi 환경에서 설치 불필요 · 파일 기반 · Python 내장 지원 · 읽기 집중 워크로드에 최적</div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 14 — DAILY REPORT -->
+<!-- ══ 14 REPORT ═════════════════════════════════════════════════ -->
 <section class="slide" id="s14">
-  <div class="top-bar">
-    <span class="section-label">일일 리포트</span>
-    <span class="badge badge-grn">Daily Report</span>
-  </div>
-  <div class="h2" style="margin-bottom:18px;">하루를 한눈에 — 데이터 기반 안전 분석</div>
-  <div class="img-box" style="width:100%;height:190px;margin-bottom:16px;">
-    <span style="font-size:32px;">🖼️</span>
-    <span>리포트 페이지 스크린샷 (/report)</span>
-    <span class="img-note">9개 통계 카드 + 4개 차트 + 이벤트 로그 + AI 분석 기록</span>
-  </div>
-  <div class="grid-4">
-    <div class="card-sm card-top-blu" style="text-align:center;"><div style="font-size:22px;font-weight:900;color:var(--blu);">9개</div><div style="font-size:11px;color:var(--mu);">통계 지표</div></div>
-    <div class="card-sm card-top-grn" style="text-align:center;"><div style="font-size:22px;font-weight:900;color:var(--grn);">4개</div><div style="font-size:11px;color:var(--mu);">시간대별 차트</div></div>
-    <div class="card-sm card-top-ora" style="text-align:center;"><div style="font-size:22px;font-weight:900;color:var(--ora);">100+</div><div style="font-size:11px;color:var(--mu);">이벤트 로그</div></div>
-    <div class="card-sm card-top-pur" style="text-align:center;"><div style="font-size:22px;font-weight:900;color:var(--pur);">AI</div><div style="font-size:11px;color:var(--mu);">분석 기록 조회</div></div>
+  <div class="sl-hd"><span class="sl-label">일일 리포트</span><span class="badge bg">Daily Report</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">하루를 한눈에 — 데이터 기반 안전 분석</div>
+    <div class="imgbox" style="flex:1;">
+      <div style="font-size:15px;font-weight:700;">리포트 페이지 스크린샷 삽입 (/report)</div>
+      <div class="imgnote">9개 통계 카드 + 4개 시간대별 차트 + 이벤트 로그 + AI 분석 기록</div>
+    </div>
+    <div class="g4">
+      <div class="csm tb-top" style="text-align:center;"><div style="font-size:26px;font-weight:900;color:var(--blu);">9개</div><div style="font-size:11px;color:var(--mu);">통계 지표</div></div>
+      <div class="csm tg-top" style="text-align:center;"><div style="font-size:26px;font-weight:900;color:var(--grn);">4개</div><div style="font-size:11px;color:var(--mu);">시간대별 차트</div></div>
+      <div class="csm to-top" style="text-align:center;"><div style="font-size:26px;font-weight:900;color:var(--ora);">100+</div><div style="font-size:11px;color:var(--mu);">이벤트 로그</div></div>
+      <div class="csm tp-top" style="text-align:center;"><div style="font-size:26px;font-weight:900;color:var(--pur);">AI</div><div style="font-size:11px;color:var(--mu);">분석 기록 조회</div></div>
+    </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 15 — SCENARIO 1 -->
+<!-- ══ 15 SCENARIO 1 ═════════════════════════════════════════════ -->
 <section class="slide" id="s15">
-  <div class="top-bar">
-    <span class="section-label">시나리오 1</span>
-    <span class="badge badge-ora">가스 누출 감지</span>
-  </div>
-  <div class="h2" style="margin-bottom:24px;">💨 가스 누출 → AI 분석 → 원격 알림</div>
-  <div style="display:flex;gap:10px;align-items:center;width:100%;margin-bottom:20px;">
-    <div class="card-sm card-top-ora" style="flex:1;"><div style="font-size:10px;color:var(--ora);font-weight:700;margin-bottom:4px;">① 감지</div><div style="font-size:12px;color:var(--sub);">MQ-2 센서 반응<br/>(GPIO LOW)</div></div>
-    <span class="flow-arrow">→</span>
-    <div class="card-sm card-top-ora" style="flex:1;"><div style="font-size:10px;color:var(--ora);font-weight:700;margin-bottom:4px;">② 필터링</div><div style="font-size:12px;color:var(--sub);">3회 연속 확인<br/>오경보 방지</div></div>
-    <span class="flow-arrow">→</span>
-    <div class="card-sm card-top-red" style="flex:1;"><div style="font-size:10px;color:var(--red);font-weight:700;margin-bottom:4px;">③ 경보</div><div style="font-size:12px;color:var(--sub);">LED ON<br/>버저 3초 · 팬 ON</div></div>
-    <span class="flow-arrow">→</span>
-    <div class="card-sm card-top-pur" style="flex:1;"><div style="font-size:10px;color:var(--pur);font-weight:700;margin-bottom:4px;">④ AI</div><div style="font-size:12px;color:var(--sub);">Groq Vision<br/>화재·연기 확인</div></div>
-    <span class="flow-arrow">→</span>
-    <div class="card-sm card-top-blu" style="flex:1;"><div style="font-size:10px;color:var(--blu);font-weight:700;margin-bottom:4px;">⑤ 알림</div><div style="font-size:12px;color:var(--sub);">사진 + AI 결과<br/>텔레그램 전송</div></div>
-  </div>
-  <div class="grid-2">
-    <div class="img-box" style="height:140px;"><span style="font-size:26px;">🖼️</span><span>가스 경보 시 대시보드 화면</span><span class="img-note">DANGER 배너 + 센서 카드 빨강</span></div>
-    <div class="img-box" style="height:140px;"><span style="font-size:26px;">📱</span><span>텔레그램 경보 메시지 캡처</span></div>
+  <div class="sl-hd"><span class="sl-label">시나리오 1</span><span class="badge bo">가스 누출 감지</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">가스 누출 → AI 분석 → 원격 알림</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+      <div class="csm to-top" style="flex:1;text-align:center;padding:12px 8px;"><div style="font-size:10px;font-weight:700;color:var(--ora);margin-bottom:4px;">① 감지</div><div style="font-size:12px;color:var(--sub);">MQ-2 반응<br/>GPIO LOW</div></div>
+      <div class="arrow" style="font-size:18px;">→</div>
+      <div class="csm to-top" style="flex:1;text-align:center;padding:12px 8px;"><div style="font-size:10px;font-weight:700;color:var(--ora);margin-bottom:4px;">② 필터</div><div style="font-size:12px;color:var(--sub);">3회 연속<br/>오경보 방지</div></div>
+      <div class="arrow" style="font-size:18px;">→</div>
+      <div class="csm tr-top" style="flex:1;text-align:center;padding:12px 8px;"><div style="font-size:10px;font-weight:700;color:var(--red);margin-bottom:4px;">③ 경보</div><div style="font-size:12px;color:var(--sub);">LED · 버저<br/>팬 자동 ON</div></div>
+      <div class="arrow" style="font-size:18px;">→</div>
+      <div class="csm tp-top" style="flex:1;text-align:center;padding:12px 8px;"><div style="font-size:10px;font-weight:700;color:var(--pur);margin-bottom:4px;">④ AI</div><div style="font-size:12px;color:var(--sub);">Groq Vision<br/>화재·연기 확인</div></div>
+      <div class="arrow" style="font-size:18px;">→</div>
+      <div class="csm tb-top" style="flex:1;text-align:center;padding:12px 8px;"><div style="font-size:10px;font-weight:700;color:var(--blu);margin-bottom:4px;">⑤ 알림</div><div style="font-size:12px;color:var(--sub);">사진 + 결과<br/>텔레그램</div></div>
+    </div>
+    <div class="g2" style="flex:1;">
+      <div class="imgbox"><div style="font-size:13px;font-weight:600;">가스 경보 시 대시보드 화면</div><div class="imgnote">DANGER 배너 + 센서 카드 빨강 강조</div></div>
+      <div class="imgbox"><div style="font-size:13px;font-weight:600;">텔레그램 경보 메시지 캡처</div><div class="imgnote">경보 종류 + 센서값 + AI 분석 사진</div></div>
+    </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 16 — SCENARIO 2 -->
+<!-- ══ 16 SCENARIO 2 ═════════════════════════════════════════════ -->
 <section class="slide" id="s16">
-  <div class="top-bar">
-    <span class="section-label">시나리오 2</span>
-    <span class="badge badge-red">사람 위험구역 진입</span>
-  </div>
-  <div class="h2" style="margin-bottom:22px;">👷 작업자가 위험구역에 진입했을 때</div>
-  <div class="grid-2">
-    <div>
-      <div class="section-label" style="margin-bottom:10px;">탐지 과정</div>
+  <div class="sl-hd"><span class="sl-label">시나리오 2</span><span class="badge br">위험구역 침입</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">작업자가 위험구역에 진입했을 때</div>
+    <div class="g2" style="flex:1;">
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="step"><div class="step-num" style="background:var(--blu-lt);color:var(--blu);">1</div><div><b>Jetson Nano</b><br/><span style="font-size:12px;color:var(--sub);">YOLOv5n → 사람 감지 (신뢰도 &gt; 50%)</span></div></div>
-        <div class="step"><div class="step-num" style="background:var(--blu-lt);color:var(--blu);">2</div><div><b>위험구역 판단</b><br/><span style="font-size:12px;color:var(--sub);">바운딩박스 중심점 → 사전 설정 영역 체크</span></div></div>
-        <div class="step"><div class="step-num" style="background:var(--red-lt);color:var(--red);">3</div><div><b>PERSON_DETECTED</b><br/><span style="font-size:12px;color:var(--sub);">POST /api/detection → SSE 브로드캐스트</span></div></div>
-        <div class="step"><div class="step-num" style="background:var(--pur-lt);color:var(--pur);">4</div><div><b>AI 시각 분석</b><br/><span style="font-size:12px;color:var(--sub);">PPE 착용 여부 · 위치 · 즉각 조치 제안</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--blu-l);color:var(--blu);">1</div><div><b>Jetson Nano 탐지</b><br/><span class="body">YOLOv5n → 사람 감지 (신뢰도 &gt; 50%)</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--blu-l);color:var(--blu);">2</div><div><b>위험구역 판단</b><br/><span class="body">바운딩박스 중심점 → 사전 설정 픽셀 영역 체크</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--red-l);color:var(--red);">3</div><div><b>PERSON_DETECTED 이벤트</b><br/><span class="body">POST /api/detection → SSE 브로드캐스트 → 브라우저 즉시 표시</span></div></div>
+        <div class="step"><div class="snum" style="background:var(--pur-l);color:var(--pur);">4</div><div><b>AI 시각 분석</b><br/><span class="body">PPE 착용 여부 · 위치 위험도 · 즉각 조치 제안</span></div></div>
       </div>
-    </div>
-    <div>
-      <div class="img-box" style="height:190px;margin-bottom:12px;">
-        <span style="font-size:36px;">🖼️</span>
-        <span>Jetson Nano 카메라 화면</span>
-        <span class="img-note">위험구역 박스 + 사람 바운딩박스 + ALERT 상태바</span>
-      </div>
-      <div class="card-sm" style="border-left:4px solid var(--red);">
-        <span class="tag tag-red">CRITICAL</span>
-        <div style="font-size:12px;color:var(--sub);margin-top:6px;">작업자 1명, 회전 기계 50cm 이내. 안전모 미착용. <b>즉시 작업 중단 및 대피 필요.</b></div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="imgbox" style="flex:1;">
+          <div style="font-size:13px;font-weight:600;">Jetson Nano 카메라 화면</div>
+          <div class="imgnote">위험구역 박스 + 사람 바운딩박스 + ALERT 표시</div>
+        </div>
+        <div class="card" style="border-left:4px solid var(--red);padding:14px 16px;">
+          <span class="tag tr">CRITICAL</span>
+          <div style="font-size:13px;color:var(--sub);margin-top:8px;">작업자 1명, 회전 기계 50cm 이내. 안전모 미착용. <b style="color:var(--tx);">즉시 작업 중단 및 대피 필요.</b></div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 17 — SCENARIO 3 -->
+<!-- ══ 17 SCENARIO 3 ═════════════════════════════════════════════ -->
 <section class="slide" id="s17">
-  <div class="top-bar">
-    <span class="section-label">시나리오 3</span>
-    <span class="badge badge-ora">야간 무인 원격 모니터링</span>
-  </div>
-  <div class="h2" style="margin-bottom:22px;">🌙 야간 무인 감시 + 원격 대응</div>
-  <div class="grid-2">
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <div class="card card-top-ora"><div class="h3" style="margin-bottom:8px;">상황</div><div class="body">공장 야간 무인 운영 중. 관리자는 퇴근 후 자택 대기. 예상치 못한 온도 상승 발생.</div></div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="tl-item">
-          <div style="display:flex;flex-direction:column;align-items:center;">
-            <div class="tl-dot" style="background:var(--ora);"></div>
-            <div class="tl-line" style="height:36px;"></div>
+  <div class="sl-hd"><span class="sl-label">시나리오 3</span><span class="badge bo">야간 원격 모니터링</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">야간 무인 감시 + 원격 대응</div>
+    <div class="g2" style="flex:1;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="card to-top"><div class="h3" style="font-size:16px;margin-bottom:6px;">상황</div><div class="body">공장 야간 무인 운영 중. 관리자 자택 대기. 예상치 못한 온도 상승 발생.</div></div>
+        <div style="display:flex;flex-direction:column;gap:9px;flex:1;">
+          <div class="tli">
+            <div style="display:flex;flex-direction:column;align-items:center;"><div class="tld" style="background:var(--ora);"></div><div class="tll" style="height:32px;"></div></div>
+            <div class="csm" style="flex:1;font-size:13px;"><b>23:15</b> — 온도 41°C 감지 → OVERHEAT 경보 발생</div>
           </div>
-          <div class="card-sm" style="flex:1;font-size:13px;"><b>23:15</b> — 온도 41°C → OVERHEAT 경보</div>
-        </div>
-        <div class="tl-item">
-          <div style="display:flex;flex-direction:column;align-items:center;">
-            <div class="tl-dot" style="background:var(--pur);"></div>
-            <div class="tl-line" style="height:36px;"></div>
+          <div class="tli">
+            <div style="display:flex;flex-direction:column;align-items:center;"><div class="tld" style="background:var(--pur);"></div><div class="tll" style="height:32px;"></div></div>
+            <div class="csm" style="flex:1;font-size:13px;"><b>23:15</b> — AI 분석: "기계 과열 의심, 냉각 필요"</div>
           </div>
-          <div class="card-sm" style="flex:1;font-size:13px;"><b>23:15</b> — AI 분석: "기계 과열 의심. 냉각 필요"</div>
-        </div>
-        <div class="tl-item">
-          <div style="display:flex;flex-direction:column;align-items:center;">
-            <div class="tl-dot" style="background:var(--blu);"></div>
-            <div class="tl-line" style="height:36px;"></div>
+          <div class="tli">
+            <div style="display:flex;flex-direction:column;align-items:center;"><div class="tld" style="background:var(--blu);"></div><div class="tll" style="height:32px;"></div></div>
+            <div class="csm" style="flex:1;font-size:13px;"><b>23:15</b> — 텔레그램: 경보 + AI 결과 + 카메라 사진 전송</div>
           </div>
-          <div class="card-sm" style="flex:1;font-size:13px;"><b>23:15</b> — 텔레그램: 경보 + 카메라 사진 전송</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot" style="background:var(--grn);"></div>
-          <div class="card-sm" style="flex:1;font-size:13px;"><b>23:16</b> — 관리자: <code style="color:var(--grn);">/fan_on</code> → 팬 원격 작동</div>
+          <div class="tli">
+            <div class="tld" style="background:var(--grn);"></div>
+            <div class="csm" style="flex:1;font-size:13px;"><b>23:16</b> — 관리자: <span style="font-family:monospace;font-weight:700;color:var(--grn);">/fan_on</span> → 냉각 팬 원격 작동</div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="img-box" style="height:100%;">
-      <span style="font-size:44px;">🖼️</span>
-      <span style="font-size:14px;">텔레그램 야간 알림 스크린샷</span>
-      <span class="img-note">OVERHEAT 메시지 + AI 분석 결과 + 원격 제어 명령</span>
+      <div class="imgbox">
+        <div style="font-size:14px;font-weight:600;">텔레그램 야간 알림 스크린샷</div>
+        <div class="imgnote">OVERHEAT 메시지 + AI 결과 + 원격 팬 제어 명령</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 18 — DEMO VIDEO -->
+<!-- ══ 18 DEMO VIDEO ════════════════════════════════════════════ -->
 <section class="slide" id="s18" style="background:white;">
-  <div class="top-bar">
-    <span class="section-label">데모</span>
-    <span class="badge badge-grn">Live Demo</span>
-  </div>
-  <div style="text-align:center;width:100%;">
-    <div style="font-size:72px;margin-bottom:20px;">🎬</div>
-    <div class="h2" style="margin-bottom:14px;">데모 영상 (Demo Video)</div>
-    <div class="img-box" style="width:100%;height:270px;">
-      <span style="font-size:44px;">▶️</span>
-      <span style="font-size:16px;font-weight:700;">데모 영상 삽입</span>
-      <span class="img-note">전체 시스템 동작 — 가스 경보 → AI 분석 → 텔레그램 → 원격 제어</span>
+  <div class="sl-hd"><span class="sl-label">데모</span><span class="badge bg">Live Demo</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:18px;">
+    <div class="h2">데모 영상 (Demo Video)</div>
+    <div class="imgbox" style="flex:1;">
+      <div style="font-size:16px;font-weight:700;">데모 영상 삽입</div>
+      <div class="imgnote">전체 시스템 동작 — 가스 경보 → AI 분석 → 텔레그램 알림 → 원격 제어</div>
     </div>
-    <div style="margin-top:18px;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;">
-      <span class="badge badge-grn">가스 경보 시연</span>
-      <span class="badge badge-blu">AI 분석 결과</span>
-      <span class="badge badge-ora">텔레그램 알림</span>
-      <span class="badge badge-red">원격 제어</span>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <span class="badge bg">가스 경보 시연</span>
+      <span class="badge bb">AI 분석 결과</span>
+      <span class="badge bo">텔레그램 알림</span>
+      <span class="badge br">원격 제어</span>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 19 — COMPARISON -->
+<!-- ══ 19 COMPARISON ════════════════════════════════════════════ -->
 <section class="slide" id="s19">
-  <div class="top-bar">
-    <span class="section-label">경쟁력 비교</span>
-    <span class="badge badge-grn">우리 시스템이 다른 이유</span>
+  <div class="sl-hd"><span class="sl-label">경쟁력 비교</span><span class="badge bg">차별점</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">기존 시스템과의 차별점</div>
+    <div style="flex:1;">
+      <table class="ctbl">
+        <thead><tr><th>기능</th><th>일반 CCTV</th><th>단순 IoT 센서</th><th>산업용 시스템</th><th style="color:var(--grn);">Smart Safety Guard</th></tr></thead>
+        <tbody>
+          <tr><td>다중 센서 융합</td><td class="no">없음</td><td class="par">일부</td><td class="yes">있음</td><td class="our">5종 + 카메라</td></tr>
+          <tr class="hl"><td>AI 장면 이해</td><td class="no">없음</td><td class="no">없음</td><td class="par">규칙 기반</td><td class="our">Groq Vision LLM</td></tr>
+          <tr><td>엣지 AI 추론</td><td class="no">없음</td><td class="no">없음</td><td class="par">클라우드 의존</td><td class="our">Jetson Nano 로컬</td></tr>
+          <tr class="hl"><td>실시간 원격 제어</td><td class="no">없음</td><td class="par">앱 필요</td><td class="yes">있음</td><td class="our">텔레그램 즉시</td></tr>
+          <tr><td>PPE 착용 자동 확인</td><td class="no">없음</td><td class="no">없음</td><td class="par">별도 시스템</td><td class="our">AI 자동 확인</td></tr>
+          <tr class="hl"><td>오경보 방지</td><td class="no">없음</td><td class="no">없음</td><td class="yes">있음</td><td class="our">히스테리시스 + AI</td></tr>
+          <tr><td>도입 비용</td><td class="par">중간</td><td class="yes">저렴</td><td class="no">매우 고가</td><td class="our">10만 원 이하</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
-  <div class="h2" style="margin-bottom:22px;">기존 시스템과의 차별점</div>
-  <table class="comparison-table">
-    <thead>
-      <tr><th>기능</th><th>일반 CCTV</th><th>단순 IoT 센서</th><th>산업용 시스템</th><th style="color:var(--grn);">✨ Smart Safety Guard</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>다중 센서 융합</td><td class="no">❌</td><td class="partial">△ 일부</td><td class="yes">✅</td><td class="our">✅ 5종 + 카메라</td></tr>
-      <tr class="highlight-row"><td>AI 장면 이해</td><td class="no">❌</td><td class="no">❌</td><td class="partial">△ 규칙 기반</td><td class="our">✅ Groq Vision LLM</td></tr>
-      <tr><td>엣지 AI 추론</td><td class="no">❌</td><td class="no">❌</td><td class="partial">△ 클라우드 의존</td><td class="our">✅ Jetson Nano 로컬</td></tr>
-      <tr class="highlight-row"><td>실시간 원격 제어</td><td class="no">❌</td><td class="partial">△ 앱 필요</td><td class="yes">✅</td><td class="our">✅ 텔레그램 즉시</td></tr>
-      <tr><td>PPE 착용 확인</td><td class="no">❌</td><td class="no">❌</td><td class="partial">△ 별도 시스템</td><td class="our">✅ AI 자동 확인</td></tr>
-      <tr class="highlight-row"><td>오경보 방지</td><td class="no">❌</td><td class="no">❌</td><td class="yes">✅</td><td class="our">✅ 히스테리시스 + AI 교차검증</td></tr>
-      <tr><td>도입 비용</td><td class="partial">중간</td><td class="yes">저렴</td><td class="no">매우 고가 💰</td><td class="our">✅ 10만 원 이하</td></tr>
-    </tbody>
-  </table>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 20 — CHALLENGES -->
+<!-- ══ 20 CHALLENGES ════════════════════════════════════════════ -->
 <section class="slide" id="s20">
-  <div class="top-bar">
-    <span class="section-label">기술적 도전</span>
-    <span class="badge badge-ora">Technical Challenges</span>
-  </div>
-  <div class="h2" style="margin-bottom:24px;">쉽지 않았던 것들 — 직접 해결했습니다</div>
-  <div class="grid-2">
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <div class="card card-top-red">
-        <div class="h3" style="color:var(--red);margin-bottom:8px;">❶ Jetson Nano ARM 충돌</div>
-        <div class="body"><b>문제:</b> pip 설치 OpenCV/NumPy → <code>Illegal instruction</code> 크래시<br/><b>해결:</b> Python 3.8 가상환경 + ARM 전용 빌드 사용</div>
+  <div class="sl-hd"><span class="sl-label">기술적 도전</span><span class="badge bo">Technical Challenges</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">쉽지 않았던 것들 — 직접 해결했습니다</div>
+    <div class="g2" style="flex:1;">
+      <div class="card tr-top" style="display:flex;flex-direction:column;gap:10px;">
+        <div class="h3" style="color:var(--red);">Jetson Nano ARM 패키지 충돌</div>
+        <div class="csm"><div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:3px;">문제</div><div class="body">pip로 설치한 OpenCV/NumPy → <b>Illegal instruction</b> 크래시. ARM64와 x86 빌드 호환 문제</div></div>
+        <div class="csm" style="border-left:3px solid var(--grn);"><div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:3px;">해결</div><div class="body">Python 3.8 가상환경 + ARM 전용 cv2 4.13.0 빌드 사용</div></div>
       </div>
-      <div class="card card-top-ora">
-        <div class="h3" style="color:var(--ora);margin-bottom:8px;">❷ MQ-2 가스 센서 오경보</div>
-        <div class="body"><b>문제:</b> GPIO 핀 플로팅 → 항상 가스 감지 상태<br/><b>해결:</b> GPIO 풀업 저항 + 히스테리시스 3회 연속 필터</div>
+      <div class="card to-top" style="display:flex;flex-direction:column;gap:10px;">
+        <div class="h3" style="color:var(--ora);">MQ-2 센서 오경보</div>
+        <div class="csm"><div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:3px;">문제</div><div class="body">GPIO 핀 플로팅 상태 → 항상 가스 감지. 센서 보정 전에도 지속 발생</div></div>
+        <div class="csm" style="border-left:3px solid var(--grn);"><div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:3px;">해결</div><div class="body">GPIO 풀업 저항 추가 + 히스테리시스 3회 연속 감지 필터 구현</div></div>
       </div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <div class="card card-top-pur">
-        <div class="h3" style="color:var(--pur);margin-bottom:8px;">❸ AI 센서 데이터 반복 출력</div>
-        <div class="body"><b>문제:</b> AI가 카메라 분석 대신 센서값만 반복<br/><b>해결:</b> 프롬프트 재설계 — 시각 분석만 요청, 센서는 컨텍스트로만</div>
+      <div class="card tp-top" style="display:flex;flex-direction:column;gap:10px;">
+        <div class="h3" style="color:var(--pur);">AI 프롬프트 오작동</div>
+        <div class="csm"><div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:3px;">문제</div><div class="body">AI가 카메라를 분석하지 않고 센서 데이터를 그대로 반복 출력</div></div>
+        <div class="csm" style="border-left:3px solid var(--grn);"><div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:3px;">해결</div><div class="body">프롬프트 재설계 — 시각 분석만 요청, 센서는 컨텍스트로만 제공</div></div>
       </div>
-      <div class="card card-top-grn">
-        <div class="h3" style="color:var(--grn);margin-bottom:8px;">❹ 실시간 병렬 처리 병목</div>
-        <div class="body"><b>문제:</b> Flask 단일 스레드에서 SSE + 센서 + AI 병목<br/><b>해결:</b> 멀티스레딩 분리 + 비동기 AI + SSE 큐 시스템</div>
+      <div class="card tg-top" style="display:flex;flex-direction:column;gap:10px;">
+        <div class="h3" style="color:var(--grn);">실시간 처리 병목</div>
+        <div class="csm"><div style="font-size:11px;font-weight:700;color:var(--mu);margin-bottom:3px;">문제</div><div class="body">Flask 단일 스레드에서 SSE + 센서 폴링 + AI 분석 동시 처리 불가</div></div>
+        <div class="csm" style="border-left:3px solid var(--grn);"><div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:3px;">해결</div><div class="body">멀티스레딩 분리 + 비동기 AI 분석 + SSE 큐(maxsize=50) 구현</div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 21 — TECH STACK -->
+<!-- ══ 21 TECH STACK ════════════════════════════════════════════ -->
 <section class="slide" id="s21">
-  <div class="top-bar">
-    <span class="section-label">기술 스택 요약</span>
-    <span class="badge badge-blu">Full Tech Stack</span>
-  </div>
-  <div class="h2" style="margin-bottom:24px;">사용한 모든 기술</div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;">
-    <div class="card card-top-ora">
-      <div class="section-label" style="color:var(--ora);margin-bottom:10px;">하드웨어</div>
-      <div style="display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--sub);">
-        <div>🔲 Raspberry Pi 3 Model B+</div>
-        <div>🤖 NVIDIA Jetson Nano 4GB</div>
-        <div>📷 USB Webcam (640×480)</div>
-        <div>💨 MQ-2, 🌡️ DHT22</div>
-        <div>📏 HC-SR04, 🔦 PIR</div>
-        <div>💡 LED × 5, 🔔 버저, 🌀 팬</div>
+  <div class="sl-hd"><span class="sl-label">기술 스택</span><span class="badge bb">Full Tech Stack</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">사용한 모든 기술</div>
+    <div class="g3" style="flex:1;">
+      <div class="card to-top" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ora);">하드웨어</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--sub);">
+          <div>Raspberry Pi 3 Model B+</div>
+          <div>NVIDIA Jetson Nano 4GB</div>
+          <div>USB Webcam (640×480)</div>
+          <div>MQ-2, DHT22, HC-SR04, PIR</div>
+          <div>LED × 5, 버저, 냉각 팬</div>
+        </div>
       </div>
-    </div>
-    <div class="card card-top-grn">
-      <div class="section-label" style="color:var(--grn);margin-bottom:10px;">백엔드 &amp; AI</div>
-      <div style="display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--sub);">
-        <div>🐍 Python 3.9 + Flask 3.x</div>
-        <div>🗄️ SQLite (내장 DB)</div>
-        <div>⚡ SSE (Server-Sent Events)</div>
-        <div>🔮 Groq Vision API (Llama 4)</div>
-        <div>🦾 YOLOv5n (PyTorch)</div>
-        <div>📷 OpenCV (영상 처리)</div>
+      <div class="card tg-top" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--grn);">백엔드 &amp; AI</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--sub);">
+          <div>Python 3.9 + Flask 3.x</div>
+          <div>SQLite (내장 DB)</div>
+          <div>SSE (Server-Sent Events)</div>
+          <div>Groq Vision API (Llama 4)</div>
+          <div>YOLOv5n (PyTorch)</div>
+          <div>OpenCV (영상 처리)</div>
+        </div>
       </div>
-    </div>
-    <div class="card card-top-blu">
-      <div class="section-label" style="color:var(--blu);margin-bottom:10px;">프론트엔드 &amp; 알림</div>
-      <div style="display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--sub);">
-        <div>🌐 Vanilla JS (프레임워크 없음)</div>
-        <div>📊 Chart.js 4 (실시간 차트)</div>
-        <div>🎨 Custom Dark CSS</div>
-        <div>📲 Telegram Bot API</div>
-        <div>🔗 GitHub (버전 관리)</div>
-        <div>🗂️ SQLite → REST → SSE</div>
+      <div class="card tb-top" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blu);">프론트엔드 &amp; 알림</div>
+        <div style="display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--sub);">
+          <div>Vanilla JS (프레임워크 없음)</div>
+          <div>Chart.js 4 (실시간 차트)</div>
+          <div>Custom CSS (다크 테마)</div>
+          <div>Telegram Bot API</div>
+          <div>GitHub (버전 관리)</div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 22 — RESULTS -->
+<!-- ══ 22 RESULTS ═══════════════════════════════════════════════ -->
 <section class="slide" id="s22">
-  <div class="top-bar">
-    <span class="section-label">성과</span>
-    <span class="badge badge-grn">What We Achieved</span>
-  </div>
-  <div class="h2" style="margin-bottom:24px;">숫자로 보는 우리의 성과</div>
-  <div class="grid-4" style="margin-bottom:20px;">
-    <div class="card card-top-grn" style="text-align:center;"><div class="num-highlight">2</div><div style="font-size:13px;font-weight:700;margin-top:4px;color:var(--tx);">노드 아키텍처</div><div style="font-size:11px;color:var(--mu);">Pi 3 + Jetson Nano</div></div>
-    <div class="card card-top-blu" style="text-align:center;"><div class="num-highlight">5</div><div style="font-size:13px;font-weight:700;margin-top:4px;color:var(--tx);">종류 센서 통합</div><div style="font-size:11px;color:var(--mu);">가스·온습도·거리·동작·비전</div></div>
-    <div class="card card-top-ora" style="text-align:center;"><div class="num-highlight">10</div><div style="font-size:13px;font-weight:700;margin-top:4px;color:var(--tx);">FPS 카메라</div><div style="font-size:11px;color:var(--mu);">Pi → Dashboard 실시간</div></div>
-    <div class="card card-top-pur" style="text-align:center;"><div class="num-highlight">8</div><div style="font-size:13px;font-weight:700;margin-top:4px;color:var(--tx);">텔레그램 명령</div><div style="font-size:11px;color:var(--mu);">완전한 원격 제어</div></div>
-  </div>
-  <div class="card" style="width:100%;">
-    <div class="section-label" style="margin-bottom:10px;">구현 완료 기능</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:13px;color:var(--sub);">
-      <div>✅ 실시간 SSE 대시보드</div>
-      <div>✅ Groq Vision AI 분석</div>
-      <div>✅ YOLOv5 사람 탐지</div>
-      <div>✅ 텔레그램 봇 (알림+제어)</div>
-      <div>✅ 일일 리포트 (9통계+4차트)</div>
-      <div>✅ 다층 경보 + 자동 액추에이터</div>
-      <div>✅ 가스 히스테리시스 필터</div>
-      <div>✅ 위험구역 침입 감지</div>
-      <div>✅ SQLite 4테이블 저장</div>
+  <div class="sl-hd"><span class="sl-label">성과</span><span class="badge bg">What We Achieved</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">숫자로 보는 성과</div>
+    <div class="g4">
+      <div class="card tg-top" style="text-align:center;padding:22px 14px;">
+        <div style="font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--grn),var(--blu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">2</div>
+        <div style="font-size:13px;font-weight:700;color:var(--tx);margin-top:4px;">노드 아키텍처</div>
+        <div style="font-size:11px;color:var(--mu);">Pi 3 + Jetson Nano</div>
+      </div>
+      <div class="card tb-top" style="text-align:center;padding:22px 14px;">
+        <div style="font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--blu),var(--pur));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">5</div>
+        <div style="font-size:13px;font-weight:700;color:var(--tx);margin-top:4px;">종 센서 통합</div>
+        <div style="font-size:11px;color:var(--mu);">가스·온습도·거리·동작·비전</div>
+      </div>
+      <div class="card to-top" style="text-align:center;padding:22px 14px;">
+        <div style="font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--ora),var(--red));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">10</div>
+        <div style="font-size:13px;font-weight:700;color:var(--tx);margin-top:4px;">FPS 카메라</div>
+        <div style="font-size:11px;color:var(--mu);">Pi 실시간 스트림</div>
+      </div>
+      <div class="card tp-top" style="text-align:center;padding:22px 14px;">
+        <div style="font-size:48px;font-weight:900;background:linear-gradient(135deg,var(--pur),var(--blu));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">8</div>
+        <div style="font-size:13px;font-weight:700;color:var(--tx);margin-top:4px;">텔레그램 명령</div>
+        <div style="font-size:11px;color:var(--mu);">완전한 원격 제어</div>
+      </div>
+    </div>
+    <div class="card" style="flex:1;padding:18px 20px;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin-bottom:12px;">구현 완료 기능</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;font-size:13px;">
+        <div class="csm" style="color:var(--sub);">실시간 SSE 대시보드</div>
+        <div class="csm" style="color:var(--sub);">Groq Vision AI 분석</div>
+        <div class="csm" style="color:var(--sub);">YOLOv5 사람 탐지</div>
+        <div class="csm" style="color:var(--sub);">텔레그램 봇 (알림+제어)</div>
+        <div class="csm" style="color:var(--sub);">일일 리포트 9통계 + 4차트</div>
+        <div class="csm" style="color:var(--sub);">다층 경보 + 자동 액추에이터</div>
+        <div class="csm" style="color:var(--sub);">가스 히스테리시스 필터</div>
+        <div class="csm" style="color:var(--sub);">위험구역 침입 감지</div>
+        <div class="csm" style="color:var(--sub);">SQLite 4테이블 데이터 저장</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 23 — FUTURE -->
+<!-- ══ 23 FUTURE ════════════════════════════════════════════════ -->
 <section class="slide" id="s23">
-  <div class="top-bar">
-    <span class="section-label">향후 계획</span>
-    <span class="badge badge-pur">Future Work</span>
-  </div>
-  <div class="h2" style="margin-bottom:24px;">더 발전시킬 수 있는 방향</div>
-  <div class="grid-2">
-    <div style="display:flex;flex-direction:column;gap:11px;">
-      <div class="card-sm" style="display:flex;gap:12px;align-items:flex-start;border-left:3px solid var(--grn);"><span style="font-size:22px;">🔊</span><div><div style="font-weight:700;font-size:14px;">음향 센서 추가</div><div style="font-size:12px;color:var(--mu);">기계 이상음 AI 분류 → 예측 정비</div></div></div>
-      <div class="card-sm" style="display:flex;gap:12px;align-items:flex-start;border-left:3px solid var(--blu);"><span style="font-size:22px;">☁️</span><div><div style="font-weight:700;font-size:14px;">클라우드 연동</div><div style="font-size:12px;color:var(--mu);">AWS/Azure IoT → 다중 현장 통합 모니터링</div></div></div>
-      <div class="card-sm" style="display:flex;gap:12px;align-items:flex-start;border-left:3px solid var(--ora);"><span style="font-size:22px;">🗺️</span><div><div style="font-weight:700;font-size:14px;">위험구역 UI 설정</div><div style="font-size:12px;color:var(--mu);">관리자가 드래그로 위험구역 지정</div></div></div>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:11px;">
-      <div class="card-sm" style="display:flex;gap:12px;align-items:flex-start;border-left:3px solid var(--pur);"><span style="font-size:22px;">📈</span><div><div style="font-weight:700;font-size:14px;">이상 탐지 AI</div><div style="font-size:12px;color:var(--mu);">센서 패턴 학습 → 사고 사전 예측</div></div></div>
-      <div class="card-sm" style="display:flex;gap:12px;align-items:flex-start;border-left:3px solid var(--grn);"><span style="font-size:22px;">📊</span><div><div style="font-weight:700;font-size:14px;">안전 점수 (Safety Score)</div><div style="font-size:12px;color:var(--mu);">현장별 일/주/월 안전 지수 자동 생성</div></div></div>
-      <div class="card-sm" style="display:flex;gap:12px;align-items:flex-start;border-left:3px solid var(--blu);"><span style="font-size:22px;">🤝</span><div><div style="font-weight:700;font-size:14px;">다중 카메라 지원</div><div style="font-size:12px;color:var(--mu);">여러 Jetson Nano → Pi 하나로 통합 관리</div></div></div>
+  <div class="sl-hd"><span class="sl-label">향후 계획</span><span class="badge bp">Future Work</span></div>
+  <div style="height:100%;display:flex;flex-direction:column;gap:16px;">
+    <div class="h2">더 발전시킬 수 있는 방향</div>
+    <div class="g2" style="flex:1;">
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="csm" style="border-left:3px solid var(--grn);flex:1;display:flex;gap:14px;align-items:flex-start;">
+          <div style="flex:1;"><div style="font-weight:700;font-size:14px;">음향 센서 추가</div><div class="body" style="margin-top:4px;">기계 이상음 AI 분류 → 예측 정비 (Predictive Maintenance)</div></div>
+        </div>
+        <div class="csm" style="border-left:3px solid var(--blu);flex:1;display:flex;gap:14px;align-items:flex-start;">
+          <div style="flex:1;"><div style="font-weight:700;font-size:14px;">클라우드 연동</div><div class="body" style="margin-top:4px;">AWS/Azure IoT Hub → 다중 현장 통합 모니터링</div></div>
+        </div>
+        <div class="csm" style="border-left:3px solid var(--ora);flex:1;display:flex;gap:14px;align-items:flex-start;">
+          <div style="flex:1;"><div style="font-weight:700;font-size:14px;">위험구역 UI 설정</div><div class="body" style="margin-top:4px;">관리자가 브라우저에서 드래그로 위험구역 직접 지정</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="csm" style="border-left:3px solid var(--pur);flex:1;display:flex;gap:14px;align-items:flex-start;">
+          <div style="flex:1;"><div style="font-weight:700;font-size:14px;">이상 탐지 AI</div><div class="body" style="margin-top:4px;">센서 데이터 패턴 학습 → 사고 사전 예측 모델</div></div>
+        </div>
+        <div class="csm" style="border-left:3px solid var(--grn);flex:1;display:flex;gap:14px;align-items:flex-start;">
+          <div style="flex:1;"><div style="font-weight:700;font-size:14px;">안전 점수 (Safety Score)</div><div class="body" style="margin-top:4px;">현장별 일/주/월 안전 지수 자동 생성 및 리포트</div></div>
+        </div>
+        <div class="csm" style="border-left:3px solid var(--blu);flex:1;display:flex;gap:14px;align-items:flex-start;">
+          <div style="flex:1;"><div style="font-weight:700;font-size:14px;">다중 카메라 지원</div><div class="body" style="margin-top:4px;">여러 Jetson Nano → Pi 하나로 통합 관리</div></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════════ SLIDE 24 — CONCLUSION -->
-<section class="slide" id="s24" style="background:white;">
-  <div class="title-bg">
-    <div class="title-grid"></div>
-    <div class="title-glow" style="background:radial-gradient(circle,rgba(21,128,61,.07),transparent 70%);"></div>
-  </div>
-  <div style="position:relative;z-index:1;text-align:center;width:100%;">
-    <div style="font-size:60px;margin-bottom:18px;">🛡️</div>
-    <div class="h2" style="margin-bottom:12px;font-size:34px;">Smart Safety Guard</div>
-    <div style="font-size:17px;color:var(--sub);margin-bottom:32px;max-width:580px;margin-left:auto;margin-right:auto;line-height:1.8;">
-      <b style="color:var(--grn);">IoT 센서</b> + <b style="color:var(--blu);">엣지 AI</b> + <b style="color:var(--pur);">클라우드 LLM</b>을 하나로 연결한<br/>
-      실시간 산업 안전 모니터링 시스템
+<!-- ══ 24 CONCLUSION ════════════════════════════════════════════ -->
+<section class="slide" id="s24" style="background:white;background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);background-size:48px 48px;">
+  <div style="position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(37,99,235,.05),transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;"></div>
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;gap:24px;">
+    <div class="h1" style="font-size:64px;">Smart Safety Guard</div>
+    <div style="font-size:20px;color:var(--sub);max-width:620px;line-height:1.7;font-weight:300;">
+      <b style="color:var(--grn);">IoT 센서</b> + <b style="color:var(--blu);">엣지 AI</b> + <b style="color:var(--pur);">클라우드 LLM</b>을 하나로 연결한<br/>실시간 산업 안전 모니터링 시스템
     </div>
-    <div style="display:flex;justify-content:center;gap:12px;margin-bottom:32px;flex-wrap:wrap;">
-      <span class="badge badge-grn">✅ 완전 구현</span>
-      <span class="badge badge-blu">✅ 실시간 동작</span>
-      <span class="badge badge-ora">✅ 원격 제어</span>
-      <span class="badge badge-pur">✅ AI 분석</span>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+      <span class="badge bg">완전 구현</span>
+      <span class="badge bb">실시간 동작</span>
+      <span class="badge bo">원격 제어</span>
+      <span class="badge bp">AI 분석</span>
     </div>
-    <div class="card" style="max-width:520px;margin:0 auto;border-left:4px solid var(--grn);text-align:left;">
-      <div style="font-size:15px;color:var(--sub);line-height:1.8;">
+    <div class="card" style="max-width:560px;border-left:4px solid var(--grn);text-align:left;padding:20px 22px;">
+      <div style="font-size:16px;color:var(--sub);line-height:1.9;">
         "단순한 학교 프로젝트가 아닙니다.<br/>
-        실제 산업 현장에 바로 배포할 수 있는<br/>
-        <b style="color:var(--grn);">완성된 IoT + AI 안전 시스템</b>입니다."
+        실제 산업 현장에 바로 배포 가능한<br/>
+        <b style="color:var(--grn);font-size:17px;">완성된 IoT + AI 안전 시스템입니다.</b>"
       </div>
     </div>
   </div>
@@ -967,9 +1026,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 <!-- Progress & Nav -->
 <div class="progress" id="progress"></div>
 <div class="nav">
-  <button class="nav-btn" onclick="navigate(-1)">‹</button>
-  <div class="slide-counter" id="counter">1 / 24</div>
-  <button class="nav-btn" onclick="navigate(1)">›</button>
+  <button class="nb" onclick="navigate(-1)">‹</button>
+  <div class="nc" id="counter">1 / 24</div>
+  <button class="nb" onclick="navigate(1)">›</button>
 </div>
 
 <script>
@@ -979,24 +1038,28 @@ let cur = 0;
 
 function goTo(n) {
   slides[cur].classList.remove("active");
+  slides[cur].classList.add("prev");
+  setTimeout(() => slides[cur < n ? cur : Math.min(total-1,n+1)].classList.remove("prev"), 50);
+  const prev = cur;
   cur = Math.max(0, Math.min(total - 1, n));
+  slides[prev].classList.remove("active", "prev");
   slides[cur].classList.add("active");
   document.getElementById("counter").textContent = (cur + 1) + " / " + total;
   document.getElementById("progress").style.width = ((cur + 1) / total * 100) + "%";
 }
-function navigate(dir) { goTo(cur + dir); }
+function navigate(d) { goTo(cur + d); }
 
 document.addEventListener("keydown", e => {
-  if (e.key==="ArrowRight"||e.key==="ArrowDown"||e.key===" "){e.preventDefault();navigate(1);}
-  if (e.key==="ArrowLeft"||e.key==="ArrowUp"){e.preventDefault();navigate(-1);}
-  if (e.key==="Home") goTo(0);
-  if (e.key==="End")  goTo(total-1);
+  if (["ArrowRight","ArrowDown"," "].includes(e.key)) { e.preventDefault(); navigate(1); }
+  if (["ArrowLeft","ArrowUp"].includes(e.key))        { e.preventDefault(); navigate(-1); }
+  if (e.key === "Home") goTo(0);
+  if (e.key === "End")  goTo(total - 1);
 });
-let tx=0;
-document.addEventListener("touchstart",e=>{tx=e.touches[0].clientX;});
-document.addEventListener("touchend",e=>{const dx=tx-e.changedTouches[0].clientX;if(Math.abs(dx)>50)navigate(dx>0?1:-1);});
-document.getElementById("deck").addEventListener("click",e=>{if(!e.target.closest(".nav"))navigate(1);});
-document.getElementById("progress").style.width=(1/total*100)+"%";
+let tx = 0;
+document.addEventListener("touchstart", e => { tx = e.touches[0].clientX; });
+document.addEventListener("touchend",   e => { const d = tx - e.changedTouches[0].clientX; if(Math.abs(d)>50) navigate(d>0?1:-1); });
+document.getElementById("deck").addEventListener("click", e => { if (!e.target.closest(".nav")) navigate(1); });
+document.getElementById("progress").style.width = (1/total*100)+"%";
 </script>
 </body>
 </html>
